@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -15,13 +16,13 @@ import java.time.LocalDate;
 @Table(name = "customers")
 @Getter
 @Setter
+@ToString
 public class Customer {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String customerId;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
     @NotBlank
     private String customerNumber;
 

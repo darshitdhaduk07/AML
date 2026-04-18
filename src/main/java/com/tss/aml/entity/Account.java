@@ -1,10 +1,7 @@
 package com.tss.aml.entity;
 
 import com.tss.aml.enums.AccountType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -13,7 +10,7 @@ import jakarta.validation.constraints.Size;
 @Entity
 @Table(name = "accounts")
 public class Account {
-
+    @Id
     @NotBlank
     private String accountId;
 
