@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @Table(name = "customers")
 @Getter
 @Setter
-public class Customer {
+public class Customer extends BaseEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

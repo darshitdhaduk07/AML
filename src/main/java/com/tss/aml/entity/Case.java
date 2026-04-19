@@ -6,13 +6,17 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "cases")
-public class Case {
+@Getter
+@Setter
+public class Case extends BaseEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -30,6 +34,4 @@ public class Case {
     @Enumerated(EnumType.STRING)
     private CaseStatus caseStatus;
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
 }

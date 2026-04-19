@@ -18,7 +18,7 @@ import java.util.UUID;
 @Table(name = "transactions")
 @Getter
 @Setter
-public class Transaction {
+public class Transaction extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID transactionId;
