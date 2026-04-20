@@ -6,12 +6,16 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.UUID;
 
 @Entity
 @Table(name = "compliance_officers")
-public class ComplianceOfficer {
+@Getter
+@Setter
+public class ComplianceOfficer extends BaseEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
