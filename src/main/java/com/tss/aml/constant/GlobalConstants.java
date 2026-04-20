@@ -10,5 +10,10 @@ public class GlobalConstants {
             "country_of_birth", "income", "net_worth"
     };
 
+    public static final String[] TRANSACTION_EXPECTED_HEADERS = {
+            "transaction_number", "account_number", "customer_number",
+            "txn_time", "amount", "txn_type", "direction", "country"
+    };
+
     public static final String UPLOAD_DIR = "uploads/";
 }
