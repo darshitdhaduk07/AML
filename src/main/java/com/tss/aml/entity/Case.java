@@ -8,8 +8,10 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.w3c.dom.stylesheets.LinkStyle;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -27,5 +29,8 @@ public class Case extends BaseEntity{
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CaseStatus caseStatus;
+
+    @OneToMany(mappedBy = "caseId",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    List<Case> cases;
 
 }

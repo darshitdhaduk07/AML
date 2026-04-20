@@ -24,15 +24,10 @@ public class Transaction extends BaseEntity {
     @Column(unique = true, nullable = false)
     private String transactionNumber;
 
-    @Column(nullable = false)
-    private String accountNumber;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AccountType accountType;
-
-    @Column(nullable = false)
-    private String customerNumber;
 
     @Column(nullable = false)
     private LocalDateTime txnTime;
@@ -51,6 +46,7 @@ public class Transaction extends BaseEntity {
     @Column(nullable = false, length = 3)
     private String country;
 
+    @Column(nullable = false)
     private String IFSC;
 
 
