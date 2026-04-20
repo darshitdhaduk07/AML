@@ -16,11 +16,6 @@ import java.util.UUID;
 public class Tenant extends BaseEntity{
 
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "tenant_id", updatable = false, nullable = false)
-    private UUID tenantId;
-
     @Column(name = "tenant_name", nullable = false, length = 100)
     private String tenantName;
 
@@ -29,6 +24,8 @@ public class Tenant extends BaseEntity{
 
     @Column(name = "schema_name", nullable = false, length = 100, unique = true)
     private String schemaName;
+
+
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tenant_status", nullable = false)

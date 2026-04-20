@@ -15,20 +15,23 @@ import java.util.UUID;
 @Setter
 public class SelectedRule extends BaseEntity{
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID ruleId;
 
-    private UUID ruleTemplateId;
 
     @Column(unique = true, nullable = false)
     private String ruleCode;
 
+    @Column
     private Integer weight;
 
+    @Column
     private String description;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private Map<String, Object> parameters;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rule_template_id")
+    private RuleTemplate ruleTemplateId;
+
 }
