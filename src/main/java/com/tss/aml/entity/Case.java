@@ -18,20 +18,14 @@ import java.util.UUID;
 @Setter
 public class Case extends BaseEntity{
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID caseId;
+    @Column(nullable = false)
+    private String caseName;
 
-    @NotNull
-    private UUID transactionId;
+    @Column(length = 1000)
+    private String caseDescription;
 
-    @NotNull
-    @Min(0)
-    @Max(100)
-    private Integer riskScore;
-
-    @NotNull
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private CaseStatus caseStatus;
 
 }

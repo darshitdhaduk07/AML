@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -17,20 +18,21 @@ import java.util.UUID;
 @Setter
 public class ComplianceOfficer extends BaseEntity{
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID complianceOfficerId;
-
-    @NotBlank
-    @Email
     @Column(unique = true, nullable = false)
     private String email;
 
-    @NotBlank
-    @Size(min = 8, message = "Password must be at least 8 characters")
-    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).*$", message = "Password must contain uppercase, lowercase, number, and special character")
+    @Column(nullable = false)
     private String password;
 
     @Column(nullable = false)
+    private int failedLoginAttempts = 0;
+
+    @Column(nullable = false)
     private boolean isSuspended = false;
+
+    @Column(nullable = false)
+    private boolean isLocked = false;
+
+    @Column
+    private LocalDateTime lockTime;
 }

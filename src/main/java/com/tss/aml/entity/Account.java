@@ -9,25 +9,27 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Entity
 @Table(name = "accounts")
 @Getter
 @Setter
-public class Account extends BaseEntity{
+public class Account extends BaseEntity {
 
-    @Id
-    @NotBlank
-    private String accountId;
-
-    @NotBlank
-    @Size(min = 8, max = 20)
-    @Pattern(regexp = "^[0-9]+$", message = "Account number must contain only digits")
+    @Column(nullable = false, unique = true, length = 20)
     private String accountNumber;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private AccountType accountType;
 
-    @NotBlank
-    private String customerId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_number", nullable = false)
+    private Customer customer;
+
+
+    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Transaction> transactions;
 }

@@ -1,5 +1,6 @@
 package com.tss.aml.entity;
 
+import com.tss.aml.enums.AccountType;
 import com.tss.aml.enums.Direction;
 import com.tss.aml.enums.TransactionType;
 import jakarta.persistence.*;
@@ -18,37 +19,46 @@ import java.util.UUID;
 @Table(name = "transactions")
 @Getter
 @Setter
-public class Transaction extends BaseEntity{
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID transactionId;
+public class Transaction extends BaseEntity {
 
     @Column(unique = true, nullable = false)
-    @NotBlank
     private String transactionNumber;
 
-    @NotBlank
+    @Column(nullable = false)
     private String accountNumber;
 
-    @NotBlank
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AccountType accountType;
+
+    @Column(nullable = false)
     private String customerNumber;
 
-    @NotNull
+    @Column(nullable = false)
     private LocalDateTime txnTime;
 
-    @NotNull
-    @DecimalMin(value = "0.0", inclusive = false)
+    @Column(nullable = false, precision = 19, scale = 4)
     private BigDecimal amount;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private TransactionType txnType;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Direction direction;
 
-    @NotBlank
-    @Size(min = 2, max = 3)
+    @Column(nullable = false, length = 3)
     private String country;
+
+    private String IFSC;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_number", nullable = false)
+    private Customer customer;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "account_number",nullable = false)
+    private Account account;
 }

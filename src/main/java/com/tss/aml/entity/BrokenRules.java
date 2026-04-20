@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -11,12 +12,12 @@ import java.util.UUID;
 @Getter
 @Setter
 public class BrokenRules extends BaseEntity{
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID brokenRuleId;
 
-    
-    private UUID caseId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "case_id", nullable = false)
+    private Case caseEntity;
 
-    private UUID ruleId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "selected_rule_id", nullable = false)
+    private SelectedRule rule;
 }
