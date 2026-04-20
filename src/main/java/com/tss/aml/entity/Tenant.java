@@ -34,8 +34,5 @@ public class Tenant extends BaseEntity{
     @Column(name = "tenant_status", nullable = false)
     private TenateStatus tenantStatus;
 
-//    @Enumerated(EnumType.STRING)
-//    @Column(name = "plan", nullable = false)
-//    private Plan plan;
 
 }
