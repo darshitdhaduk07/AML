@@ -1,7 +1,7 @@
 package com.tss.aml.service;
 
-import com.tss.aml.entity.Customer;
-import com.tss.aml.entity.Transaction;
+import com.tss.aml.tenant.entity.Customer;
+import com.tss.aml.tenant.entity.Transaction;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
@@ -52,7 +52,7 @@ public class DataIngestionService {
             sql.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             if (i < batch.size() - 1) sql.append(", ");
 
-            params.add(c.getCustomerId() != null ? c.getCustomerId() : UUID.randomUUID().toString());
+            params.add(c.getId() != null ? c.getId() : UUID.randomUUID().toString());
             params.add(c.getCustomerNumber());
             params.add(c.getFirstName());
             params.add(c.getMiddleName());
@@ -122,10 +122,10 @@ public class DataIngestionService {
             sql.append("(?, ?, ?, ?, ?, ?, ?, ?, ?)");
             if (i < batch.size() - 1) sql.append(", ");
 
-            params.add(t.getTransactionId() != null ? t.getTransactionId() : UUID.randomUUID().toString());
+            params.add(t.getId() != null ? t.getId() : UUID.randomUUID().toString());
             params.add(t.getTransactionNumber());
-            params.add(t.getAccountNumber());
-            params.add(t.getCustomerNumber());
+            params.add(t.getAccount().getAccountNumber());
+            params.add(t.getCustomer().getCustomerNumber());
             params.add(Timestamp.valueOf(t.getTxnTime()));
             params.add(t.getAmount());
             params.add(t.getTxnType().name());

@@ -1,4 +1,4 @@
-package com.tss.aml.entity;
+package com.tss.aml.tenant.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -15,8 +15,6 @@ import java.util.UUID;
 @Setter
 public class SelectedRule extends BaseEntity{
 
-
-
     @Column(unique = true, nullable = false)
     private String ruleCode;
 
@@ -30,8 +28,6 @@ public class SelectedRule extends BaseEntity{
     @Column(columnDefinition = "jsonb")
     private Map<String, Object> parameters;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "rule_template_id")
-    private RuleTemplate ruleTemplateId;
+    private UUID ruleTemplateId;
 
 }

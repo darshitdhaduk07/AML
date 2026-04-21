@@ -1,4 +1,4 @@
-package com.tss.aml.entity;
+package com.tss.aml.master.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(schema = "public", name = "blacklisted_tokens")
+@Table(name = "blacklisted_tokens")
 @Data
 public class BlacklistedToken {
 

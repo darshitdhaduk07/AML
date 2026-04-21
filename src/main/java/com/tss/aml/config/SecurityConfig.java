@@ -18,17 +18,6 @@ public class SecurityConfig {
 
     private final CustomAuthenticationProvider provider;
 
-//    public SecurityConfig(
-//            CustomAuthenticationProvider provider,
-//            JwtAuthFilter jwtAuthFilter,
-//            TenantFilter tenantFilter,
-//            LoginAuthenticationFilter loginAuthenticationFilter
-//    ) {
-//        this.provider = provider;
-//        this.jwtAuthFilter = jwtAuthFilter;
-//        this.tenantFilter = tenantFilter;
-//    }
-
     @Bean
     AuthenticationManager authManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
@@ -41,7 +30,6 @@ public class SecurityConfig {
                                  JwtAuthFilter jwtAuthFilter,
                                  TenantFilter tenantFilter) throws Exception {
 
-//        LoginAuthenticationFilter loginFilter = new LoginAuthenticationFilter(manager);
         loginAuthenticationFilter.setAuthenticationManager(manager);
 
         http.csrf(csrf -> csrf.disable())

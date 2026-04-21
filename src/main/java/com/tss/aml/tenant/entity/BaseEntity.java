@@ -1,4 +1,4 @@
-package com.tss.aml.entity;
+package com.tss.aml.tenant.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

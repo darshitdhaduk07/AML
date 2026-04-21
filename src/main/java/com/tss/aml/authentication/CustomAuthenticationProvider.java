@@ -1,14 +1,14 @@
 package com.tss.aml.authentication;
 
 import com.tss.aml.context.TenantContext;
-import com.tss.aml.entity.BankAdmin;
-import com.tss.aml.entity.ComplianceOfficer;
-import com.tss.aml.entity.SystemAdmin;
 import com.tss.aml.enums.Role;
+import com.tss.aml.master.entity.SystemAdmin;
 import com.tss.aml.model.AppUser;
-import com.tss.aml.repository.BankAdminRepository;
-import com.tss.aml.repository.ComplianceOfficerRepository;
-import com.tss.aml.repository.SystemAdminRepository;
+import com.tss.aml.tenant.entity.BankAdmin;
+import com.tss.aml.tenant.entity.ComplianceOfficer;
+import com.tss.aml.tenant.repository.BankAdminRepository;
+import com.tss.aml.tenant.repository.ComplianceOfficerRepository;
+import com.tss.aml.master.repository.SystemAdminRepository;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.*;
@@ -45,31 +45,25 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         user.setUsername(email);
         user.setTenantId(TenantContext.getTenant());
 
-//        switch(role) {
-//            case BANK_ADMIN:
-//                BankAdmin bankAdmin = bankAdminRepo.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
-//                if (!password.matches(bankAdmin.getPassword()))
-//                    throw new BadCredentialsException("Wrong Credentials");
-//
-//                return new TenantAuthenticationToken(bankAdmin, grantedAuthorities);
-//
-//            case SYSTEM_ADMIN:
-//                SystemAdmin systemAdmin = systemAdminRepo.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
-//                if (!password.matches(systemAdmin.getPassword()))
-//                    throw new BadCredentialsException("Wrong Credentials");
-//
-//                return new TenantAuthenticationToken(systemAdmin, grantedAuthorities);
-//
-//            case COMPLIANCE_OFFICER:
-//                ComplianceOfficer complianceOfficer = complianceOfficerRepo.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
-//                if (!password.matches(complianceOfficer.getPassword()))
-//                    throw new BadCredentialsException("Wrong Credentials");
-//
-//                return new TenantAuthenticationToken(complianceOfficer, grantedAuthorities);
-//
-//            default:
-//                throw new IllegalArgumentException("Invalid Role");
-//        }
+        switch(role) {
+            case BANK_ADMIN:
+                BankAdmin bankAdmin = bankAdminRepo.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
+                if (!password.matches(bankAdmin.getPassword()))
+                    throw new BadCredentialsException("Wrong Credentials");
+                break;
+            case SYSTEM_ADMIN:
+                SystemAdmin systemAdmin = systemAdminRepo.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
+                if (!password.matches(systemAdmin.getPassword()))
+                    throw new BadCredentialsException("Wrong Credentials");
+                break;
+            case COMPLIANCE_OFFICER:
+                ComplianceOfficer complianceOfficer = complianceOfficerRepo.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
+                if (!password.matches(complianceOfficer.getPassword()))
+                    throw new BadCredentialsException("Wrong Credentials");
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid Role");
+        }
 
         return new TenantAuthenticationToken(
                 user,

@@ -14,7 +14,6 @@ public class MultiTenantConnectionProviderImpl implements MultiTenantConnectionP
 
     private final DataSource dataSource;
 
-
     @Override
     public Connection getAnyConnection() throws SQLException {
         return dataSource.getConnection();
@@ -24,8 +23,6 @@ public class MultiTenantConnectionProviderImpl implements MultiTenantConnectionP
     public void releaseAnyConnection(Connection connection) throws SQLException {
         connection.close();
     }
-
-
 
     @Override
     public Connection getConnection(String tenantIdentifier) throws SQLException {

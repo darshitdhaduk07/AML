@@ -1,6 +1,6 @@
 package com.tss.aml.service;
 
-import com.tss.aml.entity.Customer;
+import com.tss.aml.tenant.entity.Customer;
 import com.tss.aml.exception.CsvParseException;
 import org.springframework.stereotype.Component;
 

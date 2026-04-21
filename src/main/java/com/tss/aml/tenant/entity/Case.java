@@ -1,18 +1,12 @@
-package com.tss.aml.entity;
+package com.tss.aml.tenant.entity;
 
 
 import com.tss.aml.enums.CaseStatus;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import org.w3c.dom.stylesheets.LinkStyle;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Table(name = "cases")
@@ -30,7 +24,7 @@ public class Case extends BaseEntity{
     @Column(nullable = false)
     private CaseStatus caseStatus;
 
-    @OneToMany(mappedBy = "caseId",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
-    List<Case> cases;
+    @OneToMany(mappedBy = "assigned_case",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    List<Alert> alerts;
 
 }

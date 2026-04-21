@@ -1,6 +1,6 @@
-package com.tss.aml.repository;
+package com.tss.aml.tenant.repository;
 
-import com.tss.aml.entity.BankAdmin;
+import com.tss.aml.tenant.entity.BankAdmin;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

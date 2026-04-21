@@ -49,9 +49,12 @@ public class LoginAuthenticationFilter
                         LoginRequestDto.class
                 );
 
-        // IMPORTANT
-        // login request tenant from body
-        TenantContext.setTenant(body.getTenant());
+        if(body.getRole().equals("SYSTEM_ADMIN")){
+            TenantContext.setTenant("master");
+        }
+        else {
+            TenantContext.setTenant(body.getTenant());
+        }
 
         TenantAuthenticationToken token =
                 new TenantAuthenticationToken(
