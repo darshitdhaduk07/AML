@@ -33,6 +33,8 @@ public class MultiTenantConnectionProviderImpl implements MultiTenantConnectionP
 
         connection.setSchema(tenantIdentifier);
 
+//        System.out.println(connection.toString());
+
         return connection;
     }
 
