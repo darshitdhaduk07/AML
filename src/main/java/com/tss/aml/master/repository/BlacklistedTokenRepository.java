@@ -1,6 +1,6 @@
-package com.tss.aml.repository;
+package com.tss.aml.master.repository;
 
-import com.tss.aml.entity.BlacklistedToken;
+import com.tss.aml.master.entity.BlacklistedToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;

@@ -1,11 +1,7 @@
-package com.tss.aml.entity;
+package com.tss.aml.tenant.entity;
 
 import com.tss.aml.enums.AccountType;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -1,6 +1,6 @@
 package com.tss.aml.service;
 
-import com.tss.aml.entity.Transaction;
+import com.tss.aml.tenant.entity.Transaction;
 import com.tss.aml.enums.Direction;
 import com.tss.aml.enums.TransactionType;
 import com.tss.aml.exception.CsvParseException;
@@ -80,8 +80,8 @@ public class TransactionCsvParser {
 
         Transaction transaction = new Transaction();
         transaction.setTransactionNumber(require(fields[0], "transaction_number"));
-        transaction.setAccountNumber(require(fields[1],     "account_number"));
-        transaction.setCustomerNumber(require(fields[2],    "customer_number"));
+//        transaction.setA(require(fields[1],     "account_number"));
+//        transaction.setCustomerNumber(require(fields[2],    "customer_number"));
         transaction.setTxnTime(parseDateTime(fields[3],     "txn_time"));
         transaction.setAmount(parseDecimal(fields[4],       "amount"));
         transaction.setTxnType(parseEnum(fields[5],         "txn_type", TransactionType.class));

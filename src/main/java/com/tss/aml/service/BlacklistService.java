@@ -1,10 +1,9 @@
 package com.tss.aml.service;
 
-import com.tss.aml.entity.BlacklistedToken;
-import com.tss.aml.repository.BlacklistedTokenRepository;
+import com.tss.aml.master.entity.BlacklistedToken;
+import com.tss.aml.master.repository.BlacklistedTokenRepository;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -74,7 +74,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
 
         if ("SYSTEM_ADMIN".equals(role)) {
-            TenantContext.setTenant("public");
+            TenantContext.setTenant("master");
 
         } else if ("BANK_ADMIN".equals(role)) {
             if (tenant == null || tenant.isBlank()) {

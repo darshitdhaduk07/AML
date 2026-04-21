@@ -1,17 +1,17 @@
-package com.tss.aml.entity;
+package com.tss.aml.master.entity;
 
+import com.tss.aml.tenant.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "admins", uniqueConstraints = {@UniqueConstraint(columnNames = "email")})
 @Getter
 @Setter
-public class SystemAdmin extends BaseEntity{
+public class SystemAdmin extends BaseEntity {
 
     @Column(name = "email", nullable = false, unique = true, length = 150)
     private String email;

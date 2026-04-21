@@ -1,6 +1,6 @@
-package com.tss.aml.repository;
+package com.tss.aml.master.repository;
 
-import com.tss.aml.entity.SystemAdmin;
+import com.tss.aml.master.entity.SystemAdmin;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
