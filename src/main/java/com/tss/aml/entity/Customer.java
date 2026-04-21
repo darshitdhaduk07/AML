@@ -10,50 +10,46 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "customers")
 @Getter
 @Setter
-public class Customer extends BaseEntity{
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String customerId;
+public class Customer extends BaseEntity {
 
     @Column(unique = true, nullable = false)
-    @NotBlank
     private String customerNumber;
 
-    @NotBlank
+    @Column(nullable = false)
     private String firstName;
 
     private String middleName;
 
-    @NotBlank
+    @Column(nullable = false)
     private String lastName;
 
     private String familyCode;
 
-    @NotNull
+    @Column(nullable = false)
     private LocalDate dob;
 
-    @NotBlank
+    @Column(nullable = false)
     private String occupation;
 
-    @NotBlank
-    @Size(min = 2, max = 3)
+    @Column(nullable = false, length = 3)
     private String nationalityCountry;
 
-    @NotBlank
-    @Size(min = 2, max = 3)
+    @Column(nullable = false, length = 3)
     private String countryOfBirth;
 
-    @NotNull
-    @DecimalMin(value = "0.0", inclusive = true)
+    @Column(nullable = false, precision = 19, scale = 4)
     private BigDecimal income;
 
-    @NotNull
-    @DecimalMin(value = "0.0", inclusive = true)
+    @Column(nullable = false, precision = 19, scale = 4)
     private BigDecimal netWorth;
+
+
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Transaction> transactions;
 }

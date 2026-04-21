@@ -17,10 +17,6 @@ import java.util.UUID;
 @Getter
 @Setter
 public class RuleTemplate extends BaseEntity{
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "rule_template_id", updatable = false, nullable = false)
-    private UUID ruleTemplateId;
 
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     private String description;
@@ -28,4 +24,7 @@ public class RuleTemplate extends BaseEntity{
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "parameters", columnDefinition = "jsonb", nullable = false)
     private Map<String, Object> parameters;
+
+    @OneToOne(mappedBy = "ruleTemplateId",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private SelectedRule selectedRule;
 }

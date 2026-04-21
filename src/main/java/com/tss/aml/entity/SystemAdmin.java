@@ -12,14 +12,19 @@ import java.util.UUID;
 @Getter
 @Setter
 public class SystemAdmin extends BaseEntity{
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "admin_id", updatable = false, nullable = false)
-    private UUID adminId;
 
     @Column(name = "email", nullable = false, unique = true, length = 150)
     private String email;
 
     @Column(name = "password", nullable = false)
     private String password;
+
+    @Column(nullable = false)
+    private boolean isLocked = false;
+
+    @Column(nullable = false)
+    private Integer failedLoginAttempts = 0;
+
+    @Column
+    private LocalDateTime lockTime;
 }

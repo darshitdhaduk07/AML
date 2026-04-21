@@ -8,8 +8,10 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.w3c.dom.stylesheets.LinkStyle;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -18,20 +20,17 @@ import java.util.UUID;
 @Setter
 public class Case extends BaseEntity{
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID caseId;
+    @Column(nullable = false)
+    private String caseName;
 
-    @NotNull
-    private UUID transactionId;
+    @Column(length = 1000)
+    private String caseDescription;
 
-    @NotNull
-    @Min(0)
-    @Max(100)
-    private Integer riskScore;
-
-    @NotNull
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private CaseStatus caseStatus;
+
+    @OneToMany(mappedBy = "caseId",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    List<Case> cases;
 
 }

@@ -12,6 +12,10 @@ import java.util.UUID;
 @Setter
 public abstract class BaseEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
     @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
