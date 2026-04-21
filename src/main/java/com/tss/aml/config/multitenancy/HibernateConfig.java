@@ -1,6 +1,7 @@
 package com.tss.aml.config.multitenancy;
 
 import lombok.AllArgsConstructor;
+import org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 
@@ -9,20 +10,17 @@ import java.util.Map;
 
 @Configuration
 @AllArgsConstructor
-public class HibernateConfig {
+public class HibernateConfig implements HibernatePropertiesCustomizer {
 
     private MultiTenantConnectionProviderImpl connectionProvider;
 
     private CurrentTenantIdentifierResolverImpl tenantResolver;
 
-    public void customize(LocalContainerEntityManagerFactoryBean emf) {
+    @Override
+    public void customize(Map<String, Object> hibernateProperties) {
+        hibernateProperties.put("hibernate.multiTenancy", "SCHEMA");
+        hibernateProperties.put("hibernate.multi_tenant_connection_provider", connectionProvider);
+        hibernateProperties.put("hibernate.tenant_identifier_resolver", tenantResolver);
 
-        Map<String, Object> props = new HashMap<>();
-
-        props.put("hibernate.multiTenancy", "SCHEMA");
-        props.put("hibernate.multi_tenant_connection_provider", connectionProvider);
-        props.put("hibernate.tenant_identifier_resolver", tenantResolver);
-
-        emf.setJpaPropertyMap(props);
     }
 }

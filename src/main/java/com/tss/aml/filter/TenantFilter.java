@@ -1,7 +1,8 @@
-package com.tss.aml.config;
+package com.tss.aml.filter;
 
-import com.tss.aml.tenat.TenantContext;
-import jakarta.servlet.*;
+import com.tss.aml.context.TenantContext;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
@@ -14,15 +15,17 @@ public class TenantFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        try {
+            String tenant = request.getHeader("X-Tenant-ID");
 
-        String tenant = request.getHeader("X-Tenant-ID");
+            if (tenant != null && !tenant.isEmpty()) {
+                TenantContext.setTenant(tenant);
+            }
 
-        if (tenant != null && !tenant.isEmpty()) {
-            TenantContext.setTenant(tenant);
+            filterChain.doFilter(request, response);
         }
-
-        filterChain.doFilter(request, response);
-
-        TenantContext.clear();
+        finally{
+            TenantContext.clear();
+        }
     }
 }

@@ -1,4 +1,4 @@
-package com.tss.aml.tenat;
+package com.tss.aml.context;
 
 public class TenantContext {
     private static final ThreadLocal<String> currentTenant = new ThreadLocal<>();
