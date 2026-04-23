@@ -48,7 +48,7 @@ public class MigrationService {
             flyway.migrate();
             System.out.println("HOHO1");
             System.out.println("heello3");
-            TenantContext.setTenant(schemaName);
+
         }
         catch(Exception e){
             throw new RuntimeException("Tenant registration failed: " + e.getMessage());
@@ -64,7 +64,7 @@ public class MigrationService {
 
         tenantRepository.save(tenant);
 
-
+        TenantContext.setTenant(schemaName);
     }
 
 }

@@ -25,12 +25,12 @@ public class TenantRegistrationService {
 
         String schemaName = generateSchemaName(request.getTenantName());
 
-//        if (tenantRepository.findBySchemaName(schemaName).isPresent()) {
-//            throw new RuntimeException("Tenant already exists");
-//        }
+        if (tenantRepository.findBySchemaName(schemaName).isPresent()) {
+            throw new RuntimeException("Tenant already exists");
+        }
 
-//        migrationService.runFlyWay(schemaName);
-//        migrationService.saveTenant(schemaName, request);
+        migrationService.runFlyWay(schemaName);
+        migrationService.saveTenant(schemaName, request);
         bankAdminRegistrationService.registerAdmin(request);
     }
 
