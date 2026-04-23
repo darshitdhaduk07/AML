@@ -39,10 +39,10 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
 
                 .authorizeHttpRequests(auth -> auth
-                            .requestMatchers("/register")
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated());
+//                            .requestMatchers("/register")
+//                        .permitAll());
+                        .anyRequest().permitAll());
+//                        .authenticated());
 
         return http.build();
     }

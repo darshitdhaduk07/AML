@@ -48,14 +48,14 @@ public class EmailNotificationService implements NotificationService {
         String contentTemplate = "";
 
         switch (type) {
-//            case INFO:
-//                subject = (String)context.getVariable("subject");
-//                contentTemplate = "email/infoLayout";
-//                break;
+            case TEST:
+                subject = "Test";
+                contentTemplate = "email/test";
+                break;
         }
         context.setVariable("contentTemplate", contentTemplate);
         context.setVariable("title", subject);
-        String html = templateEngine.process("email/layout", context);
+        String html = templateEngine.process("email/test", context);
 
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true);
