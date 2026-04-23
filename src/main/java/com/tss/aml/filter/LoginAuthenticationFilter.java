@@ -53,7 +53,7 @@ public class LoginAuthenticationFilter
             TenantContext.setTenant("master");
         }
         else {
-            TenantContext.setTenant(body.getTenant());
+            TenantContext.setTenant("tenant_" + body.getTenant());
         }
 
         TenantAuthenticationToken token =

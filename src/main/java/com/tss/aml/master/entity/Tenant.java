@@ -2,7 +2,7 @@ package com.tss.aml.master.entity;
 
 
 import com.tss.aml.tenant.entity.BaseEntity;
-import com.tss.aml.enums.TenateStatus;
+import com.tss.aml.enums.TenantStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,7 +24,7 @@ public class Tenant extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tenant_status", nullable = false)
-    private TenateStatus tenantStatus;
+    private TenantStatus tenantStatus;
 
 
 }
