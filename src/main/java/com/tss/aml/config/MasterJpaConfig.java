@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.*;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import java.util.Map;
+
 @Configuration
 @EnableJpaRepositories(basePackages = "com.tss.aml.master.repository", entityManagerFactoryRef = "masterEntityManagerFactory", transactionManagerRef = "masterTransactionManager")
 public class MasterJpaConfig {
@@ -21,6 +23,9 @@ public class MasterJpaConfig {
                 .dataSource(dataSource)
                 .packages("com.tss.aml.master.entity")
                 .persistenceUnit("master")
+                .properties(Map.of(
+                        "hibernate.default_schema","master"
+                ))
                 .build();
     }
 

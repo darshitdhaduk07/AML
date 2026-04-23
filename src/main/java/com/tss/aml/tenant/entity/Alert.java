@@ -20,6 +20,6 @@ public class Alert extends BaseEntity{
     private BigDecimal riskScore;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "case.id",unique=true)
-    private Case assigned_case;
+    @JoinColumn(name = "case_id",unique=true)
+    private Case assignedCase;
 }
