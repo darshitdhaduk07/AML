@@ -46,10 +46,10 @@ public class Transaction extends BaseEntity {
 
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_number", nullable = false)
+    @JoinColumn(name = "customer_number",referencedColumnName = "customerNumber", nullable = false)
     private Customer customer;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_number",nullable = false)
+    @JoinColumn(name = "account_number",referencedColumnName = "accountNumber",nullable = false)
     private Account account;
 }

@@ -12,7 +12,7 @@ public class GlobalConstants {
 
     public static final String[] TRANSACTION_EXPECTED_HEADERS = {
             "transaction_number", "account_number", "customer_number",
-            "txn_time", "amount", "txn_type", "direction", "country"
+            "txn_time", "amount", "txn_type", "direction", "country","account_type", "IFSC"
     };
 
     public static final String UPLOAD_DIR = "uploads/";

@@ -1,11 +1,15 @@
 package com.tss.aml.service;
 
+import com.tss.aml.dto.result.ParseAccount;
+import com.tss.aml.dto.result.ParseTransaction;
+import com.tss.aml.dto.result.TransactionParseResult;
+import com.tss.aml.tenant.entity.Account;
 import com.tss.aml.tenant.entity.Customer;
-import com.tss.aml.tenant.entity.Transaction;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Transaction;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -96,41 +100,46 @@ public class DataIngestionService {
         bulkCustomerUpsert(csvParser.parse(file.getInputStream()));
     }
 
-    private void bulkTransactionUpsert(List<Transaction> transactions) {
+    private void bulkTransactionUpsert(List<ParseTransaction> transactions) {
+
         int batchSize = 500;
 
         for (int i = 0; i < transactions.size(); i += batchSize) {
-            List<Transaction> batch = transactions.subList(i, Math.min(i + batchSize, transactions.size()));
+            List<ParseTransaction> batch =
+                    transactions.subList(i, Math.min(i + batchSize, transactions.size()));
+
             upsertTransactionBatch(batch);
             entityManager.flush();
-            entityManager.clear(); // free memory after each batch
+            entityManager.clear();
         }
     }
 
-    private void upsertTransactionBatch(List<Transaction> batch) {
+    private void upsertTransactionBatch(List<ParseTransaction> batch) {
         StringBuilder sql = new StringBuilder("""
             INSERT INTO transactions (
                 transaction_id, transaction_number, account_number, customer_number,
-                txn_time, amount, txn_type, direction, country
+                txn_time, amount, txn_type, direction, country,account_type, IFSC
             ) VALUES
             """);
 
         List<Object> params = new ArrayList<>();
 
         for (int i = 0; i < batch.size(); i++) {
-            Transaction t = batch.get(i);
-            sql.append("(?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            ParseTransaction t = batch.get(i);
+            sql.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             if (i < batch.size() - 1) sql.append(", ");
 
-            params.add(t.getId() != null ? t.getId() : UUID.randomUUID().toString());
+            params.add(UUID.randomUUID().toString());
             params.add(t.getTransactionNumber());
-            params.add(t.getAccount().getAccountNumber());
-            params.add(t.getCustomer().getCustomerNumber());
+            params.add(t.getAccountNumber());
+            params.add(t.getCustomerNumber());
             params.add(Timestamp.valueOf(t.getTxnTime()));
             params.add(t.getAmount());
             params.add(t.getTxnType().name());
             params.add(t.getDirection().name());
             params.add(t.getCountry());
+            params.add(t.getAccountType().name());
+            params.add(t.getIFSC());
         }
 
         sql.append("""
@@ -143,7 +152,9 @@ public class DataIngestionService {
                  amount           = EXCLUDED.amount,
                  txn_type         = EXCLUDED.txn_type,
                  direction        = EXCLUDED.direction,
-                 country          = EXCLUDED.country
+                 country          = EXCLUDED.country,
+                 account_type     = EXCLUDED.account_type,
+                 IFSC             = EXCLUDED.IFSC
             """);
 
         Query query = entityManager.createNativeQuery(sql.toString());
@@ -152,11 +163,70 @@ public class DataIngestionService {
         }
         query.executeUpdate();
     }
+    private void upsertAccountBatch(List<ParseAccount> batch) {
+
+        StringBuilder sql = new StringBuilder("""
+        INSERT INTO accounts (
+            account_id, account_number, account_type, IFSC, customer_number
+        ) VALUES
+        """);
+
+        List<Object> params = new ArrayList<>();
+
+        for (int i = 0; i < batch.size(); i++) {
+
+            ParseAccount a = batch.get(i);
+
+            sql.append("(?, ?, ?, ?, ?)");
+            if (i < batch.size() - 1) sql.append(", ");
+
+            params.add(UUID.randomUUID().toString());
+            params.add(a.getAccountNumber());
+            params.add(a.getAccountType().name());
+            params.add(a.getIFSC());
+            params.add(a.getCustomerNumber());
+        }
+
+        sql.append("""
+        ON CONFLICT (account_number)
+        DO UPDATE SET
+            account_type     = EXCLUDED.account_type,
+            IFSC             = EXCLUDED.IFSC,
+            customer_number  = EXCLUDED.customer_number
+    """);
+
+        Query query = entityManager.createNativeQuery(sql.toString());
+
+        for (int i = 0; i < params.size(); i++) {
+            query.setParameter(i + 1, params.get(i));
+        }
+
+        query.executeUpdate();
+    }
+    private void bulkAccountUpsert(List<ParseAccount> accounts) {
+
+        int batchSize = 500;
+
+        for (int i = 0; i < accounts.size(); i += batchSize) {
+            List<ParseAccount> batch = accounts.subList(i, Math.min(i + batchSize, accounts.size()));
+            upsertAccountBatch(batch);
+            entityManager.flush();
+            entityManager.clear();
+        }
+    }
 
     @Async
     @Transactional
     public void ingestTransactionsFromFile(MultipartFile file) throws IOException {
-        bulkTransactionUpsert(transactionParser.parse(file.getInputStream()));
+
+        TransactionParseResult result =
+                transactionParser.parse(file.getInputStream());
+
+
+        bulkAccountUpsert(result.getAccounts());
+
+
+        bulkTransactionUpsert(result.getTransactions());
     }
 
 }
