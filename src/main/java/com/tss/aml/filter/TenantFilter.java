@@ -23,8 +23,7 @@ public class TenantFilter extends OncePerRequestFilter {
             }
 
             filterChain.doFilter(request, response);
-        }
-        finally{
+        } finally {
             TenantContext.clear();
         }
     }

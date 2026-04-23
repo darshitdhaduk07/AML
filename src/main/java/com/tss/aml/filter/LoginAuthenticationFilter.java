@@ -22,81 +22,54 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
 @Component
-public class LoginAuthenticationFilter
-        extends AbstractAuthenticationProcessingFilter {
+public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
     @Autowired
     private JwtService jwtService;
 
-    public LoginAuthenticationFilter(
-            AuthenticationManager manager
-    ) throws NoSuchAlgorithmException {
+    public LoginAuthenticationFilter(AuthenticationManager manager) throws NoSuchAlgorithmException {
         super("/login");
         setAuthenticationManager(manager);
     }
 
     @Override
-    public Authentication attemptAuthentication(
-            HttpServletRequest request,
-            @NonNull HttpServletResponse response
-    ) throws IOException {
+    public Authentication attemptAuthentication(HttpServletRequest request, @NonNull HttpServletResponse response) throws IOException {
 
         ObjectMapper mapper = new ObjectMapper();
 
-        LoginRequestDto body =
-                mapper.readValue(
-                        request.getInputStream(),
-                        LoginRequestDto.class
-                );
+        LoginRequestDto body = mapper.readValue(request.getInputStream(), LoginRequestDto.class);
 
-        if(body.getRole().equals("SYSTEM_ADMIN")){
+        if (body.getRole().equals("SYSTEM_ADMIN")) {
             TenantContext.setTenant("master");
-        }
-        else {
+        } else {
             TenantContext.setTenant(body.getTenant());
         }
 
-        TenantAuthenticationToken token =
-                new TenantAuthenticationToken(
-                        body.getEmail(),
-                        body.getPassword(),
-                        body.getTenant(),
-                        body.getRole()
-                );
+        TenantAuthenticationToken token = new TenantAuthenticationToken(body.getEmail(), body.getPassword(), body.getTenant(), body.getRole());
 
-        return getAuthenticationManager()
-                .authenticate(token);
+        return getAuthenticationManager().authenticate(token);
     }
 
     @Override
-    protected void successfulAuthentication(
-            @NonNull HttpServletRequest request,
-            HttpServletResponse response,
-            @NonNull FilterChain chain,
-            @NonNull Authentication auth
-    ) throws IOException {
+    protected void successfulAuthentication(@NonNull HttpServletRequest request, HttpServletResponse response, @NonNull FilterChain chain, @NonNull Authentication auth) throws IOException {
 
         response.setContentType("application/json");
 
         response.getWriter().write("""
-        {
-          "message":"Login Success",
-          "jwt":\""""+ jwtService.generateToken((AppUser)auth.getPrincipal()) +"\"\n}");
+                {
+                  "message":"Login Success",
+                  "jwt":\"""" + jwtService.generateToken((AppUser) auth.getPrincipal()) + "\"\n}");
     }
 
     @Override
-    protected void unsuccessfulAuthentication(
-            @NonNull HttpServletRequest request,
-            HttpServletResponse response,
-            @NonNull AuthenticationException ex
-    ) throws IOException {
+    protected void unsuccessfulAuthentication(@NonNull HttpServletRequest request, HttpServletResponse response, @NonNull AuthenticationException ex) throws IOException {
 
         response.setStatus(401);
 
         response.getWriter().write("""
-        {
-          "error":"Invalid Credentials"
-        }
-        """);
+                {
+                  "error":"Invalid Credentials"
+                }
+                """);
     }
 }

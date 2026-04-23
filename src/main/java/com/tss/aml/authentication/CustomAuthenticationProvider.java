@@ -45,7 +45,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         user.setUsername(email);
         user.setTenantId(TenantContext.getTenant());
 
-        switch(role) {
+        switch (role) {
             case BANK_ADMIN:
                 BankAdmin bankAdmin = bankAdminRepo.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
                 if (!password.matches(bankAdmin.getPassword()))

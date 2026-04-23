@@ -1,6 +1,7 @@
 package com.tss.aml.config;
 
 import javax.sql.DataSource;
+
 import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.jpa.EntityManagerFactoryBuilder;
@@ -10,19 +11,12 @@ import org.springframework.orm.jpa.*;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
-@EnableJpaRepositories(
-        basePackages = "com.tss.aml.master.repository",
-        entityManagerFactoryRef = "masterEntityManagerFactory",
-        transactionManagerRef = "masterTransactionManager"
-)
+@EnableJpaRepositories(basePackages = "com.tss.aml.master.repository", entityManagerFactoryRef = "masterEntityManagerFactory", transactionManagerRef = "masterTransactionManager")
 public class MasterJpaConfig {
 
     @Primary
     @Bean(name = "masterEntityManagerFactory")
-    public LocalContainerEntityManagerFactoryBean masterEntityManagerFactory(
-            EntityManagerFactoryBuilder builder,
-            DataSource dataSource
-    ) {
+    public LocalContainerEntityManagerFactoryBean masterEntityManagerFactory(EntityManagerFactoryBuilder builder, DataSource dataSource) {
         return builder
                 .dataSource(dataSource)
                 .packages("com.tss.aml.master.entity")
@@ -32,10 +26,7 @@ public class MasterJpaConfig {
 
     @Primary
     @Bean
-    public PlatformTransactionManager masterTransactionManager(
-            @Qualifier("masterEntityManagerFactory")
-            EntityManagerFactory emf
-    ) {
+    public PlatformTransactionManager masterTransactionManager(@Qualifier("masterEntityManagerFactory") EntityManagerFactory emf) {
         return new JpaTransactionManager(emf);
     }
 }
