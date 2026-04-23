@@ -24,7 +24,7 @@ public class Case extends BaseEntity{
     @Column(nullable = false)
     private CaseStatus caseStatus;
 
-    @OneToMany(mappedBy = "assigned_case",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "assignedCase",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     List<Alert> alerts;
 
 }

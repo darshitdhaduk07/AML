@@ -29,10 +29,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
 
     @Override
-    protected void doFilterInternal(HttpServletRequest req,
-                                    HttpServletResponse res,
-                                    FilterChain chain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws ServletException, IOException {
 
         String header = req.getHeader("Authorization");
         if (header == null || !header.startsWith("Bearer ")) {
@@ -67,7 +64,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         // Step 3 — extract role and route tenant context
-        String role     = claims.get("role", String.class);
+        String role = claims.get("role", String.class);
         String tenant = claims.get("tenant", String.class);
 
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
@@ -108,12 +105,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         dto.setUsername(claims.get("sub").toString());
         dto.setRole(Role.valueOf(claims.get("role").toString()));
-        if(claims.get("tenant") != null)
-            dto.setTenantId(claims.get("tenant").toString());
+        if (claims.get("tenant") != null) dto.setTenantId(claims.get("tenant").toString());
         dto.setAuthorities(List.of(new SimpleGrantedAuthority("Role_" + role)));
 
-        TenantAuthenticationToken auth =
-                new TenantAuthenticationToken(dto, authorities);
+        TenantAuthenticationToken auth = new TenantAuthenticationToken(dto, authorities);
         SecurityContextHolder.getContext().setAuthentication(auth);
 
         try {
@@ -123,12 +118,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
     }
 
-    private void sendError(HttpServletResponse res, String code, String message)
-            throws IOException {
+    private void sendError(HttpServletResponse res, String code, String message) throws IOException {
         res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         res.setContentType("application/json");
-        res.getWriter().write(
-                String.format("{\"error\":\"%s\",\"message\":\"%s\"}", code, message)
-        );
+        res.getWriter().write(String.format("{\"error\":\"%s\",\"message\":\"%s\"}", code, message));
     }
 }

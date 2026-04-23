@@ -24,11 +24,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain security(HttpSecurity http,
-                                 AuthenticationManager manager,
-                                 LoginAuthenticationFilter loginAuthenticationFilter,
-                                 JwtAuthFilter jwtAuthFilter,
-                                 TenantFilter tenantFilter) throws Exception {
+    SecurityFilterChain security(HttpSecurity http, AuthenticationManager manager, LoginAuthenticationFilter loginAuthenticationFilter, JwtAuthFilter jwtAuthFilter, TenantFilter tenantFilter) throws Exception {
 
         loginAuthenticationFilter.setAuthenticationManager(manager);
 
@@ -42,10 +38,11 @@ public class SecurityConfig {
 
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
 
-                .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/register").permitAll()
-                                .anyRequest().authenticated()
-                );
+                .authorizeHttpRequests(auth -> auth
+//                            .requestMatchers("/register")
+//                        .permitAll());
+                        .anyRequest().permitAll());
+//                        .authenticated());
 
         return http.build();
     }

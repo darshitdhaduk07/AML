@@ -11,8 +11,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Getter
-public class TenantAuthenticationToken
-        extends AbstractAuthenticationToken {
+public class TenantAuthenticationToken extends AbstractAuthenticationToken {
 
     private final Object principal;
     private final Object credentials;
@@ -21,12 +20,7 @@ public class TenantAuthenticationToken
     private String role;
 
     // BEFORE LOGIN
-    public TenantAuthenticationToken(
-            String email,
-            String password,
-            String tenant,
-            String role
-    ) {
+    public TenantAuthenticationToken(String email, String password, String tenant, String role) {
         super(List.of());
 
         this.principal = email;
@@ -38,10 +32,7 @@ public class TenantAuthenticationToken
     }
 
     // AFTER SUCCESS
-    public TenantAuthenticationToken(
-            AppUser principal,
-            Collection<? extends GrantedAuthority> authorities
-    ) {
+    public TenantAuthenticationToken(AppUser principal, Collection<? extends GrantedAuthority> authorities) {
         super(authorities);
 
         this.principal = principal;
