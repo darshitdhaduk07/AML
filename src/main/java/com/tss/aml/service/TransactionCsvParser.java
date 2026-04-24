@@ -118,12 +118,15 @@ public class TransactionCsvParser {
         }
 
         ParseTransaction t = new ParseTransaction();
+
         t.setTransactionNumber(transactionNumber);
+        t.setAccountType(accountType);
         t.setTxnTime(txnTime);
         t.setAmount(amount);
         t.setTxnType(txnType);
         t.setDirection(direction);
         t.setCountry(country);
+        t.setIFSC(ifsc);
         t.setAccountNumber(accountNumber);
         t.setCustomerNumber(customerNumber);
 

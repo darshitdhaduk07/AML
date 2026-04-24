@@ -43,9 +43,9 @@ public class DataIngestionService {
     private void upsertCustomerBatch(List<Customer> batch) {
         StringBuilder sql = new StringBuilder("""
                 INSERT INTO customers (
-                    customer_id, customer_number, first_name, middle_name,
+                    id, customer_number, first_name, middle_name,
                     last_name, family_code, dob, occupation,
-                    nationality_country, country_of_birth, income, net_worth
+                    nationality_country, country_of_birth, income, net_worth,created_at, updated_at
                 ) VALUES
                 """);
 
@@ -53,10 +53,10 @@ public class DataIngestionService {
 
         for (int i = 0; i < batch.size(); i++) {
             Customer c = batch.get(i);
-            sql.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            sql.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,NOW(), NOW())");
             if (i < batch.size() - 1) sql.append(", ");
 
-            params.add(c.getId() != null ? c.getId() : UUID.randomUUID().toString());
+            params.add(UUID.randomUUID());
             params.add(c.getCustomerNumber());
             params.add(c.getFirstName());
             params.add(c.getMiddleName());
@@ -73,7 +73,6 @@ public class DataIngestionService {
         sql.append("""
                  ON CONFLICT (customer_number)
                  DO UPDATE SET
-                     customer_id         = EXCLUDED.customer_id,
                      first_name          = EXCLUDED.first_name,
                      middle_name         = EXCLUDED.middle_name,
                      last_name           = EXCLUDED.last_name,
@@ -83,7 +82,8 @@ public class DataIngestionService {
                      nationality_country = EXCLUDED.nationality_country,
                      country_of_birth    = EXCLUDED.country_of_birth,
                      income              = EXCLUDED.income,
-                     net_worth           = EXCLUDED.net_worth
+                     net_worth           = EXCLUDED.net_worth,
+                     updated_at       = NOW()
                 """);
 
         Query query = entityManager.createNativeQuery(sql.toString());
@@ -117,8 +117,8 @@ public class DataIngestionService {
     private void upsertTransactionBatch(List<ParseTransaction> batch) {
         StringBuilder sql = new StringBuilder("""
             INSERT INTO transactions (
-                transaction_id, transaction_number, account_number, customer_number,
-                txn_time, amount, txn_type, direction, country,account_type, IFSC
+                id, transaction_number, account_number, customer_number,
+                txn_time, amount, txn_type, direction, country,account_type, ifsc,created_at, updated_at
             ) VALUES
             """);
 
@@ -126,10 +126,10 @@ public class DataIngestionService {
 
         for (int i = 0; i < batch.size(); i++) {
             ParseTransaction t = batch.get(i);
-            sql.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            sql.append("(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,NOW(), NOW())");
             if (i < batch.size() - 1) sql.append(", ");
 
-            params.add(UUID.randomUUID().toString());
+            params.add(UUID.randomUUID());
             params.add(t.getTransactionNumber());
             params.add(t.getAccountNumber());
             params.add(t.getCustomerNumber());
@@ -140,12 +140,13 @@ public class DataIngestionService {
             params.add(t.getCountry());
             params.add(t.getAccountType().name());
             params.add(t.getIFSC());
+            System.out.println("txn_type = " + t.getTxnType());
+            System.out.println("account_type = " + t.getAccountType());
         }
 
         sql.append("""
              ON CONFLICT (transaction_number)
              DO UPDATE SET
-                 transaction_id   = EXCLUDED.transaction_id,
                  account_number   = EXCLUDED.account_number,
                  customer_number  = EXCLUDED.customer_number,
                  txn_time         = EXCLUDED.txn_time,
@@ -154,7 +155,9 @@ public class DataIngestionService {
                  direction        = EXCLUDED.direction,
                  country          = EXCLUDED.country,
                  account_type     = EXCLUDED.account_type,
-                 IFSC             = EXCLUDED.IFSC
+                 ifsc             = EXCLUDED.ifsc,
+                 updated_at       = NOW()
+
             """);
 
         Query query = entityManager.createNativeQuery(sql.toString());
@@ -167,7 +170,7 @@ public class DataIngestionService {
 
         StringBuilder sql = new StringBuilder("""
         INSERT INTO accounts (
-            account_id, account_number, account_type, IFSC, customer_number
+            id, account_number, account_type, ifsc, customer_number,created_at, updated_at
         ) VALUES
         """);
 
@@ -177,10 +180,10 @@ public class DataIngestionService {
 
             ParseAccount a = batch.get(i);
 
-            sql.append("(?, ?, ?, ?, ?)");
+            sql.append("(?, ?, ?, ?, ?,NOW(), NOW())");
             if (i < batch.size() - 1) sql.append(", ");
 
-            params.add(UUID.randomUUID().toString());
+            params.add(UUID.randomUUID());
             params.add(a.getAccountNumber());
             params.add(a.getAccountType().name());
             params.add(a.getIFSC());
@@ -191,8 +194,9 @@ public class DataIngestionService {
         ON CONFLICT (account_number)
         DO UPDATE SET
             account_type     = EXCLUDED.account_type,
-            IFSC             = EXCLUDED.IFSC,
-            customer_number  = EXCLUDED.customer_number
+            ifsc             = EXCLUDED.ifsc,
+            customer_number  = EXCLUDED.customer_number,
+            updated_at       = NOW()
     """);
 
         Query query = entityManager.createNativeQuery(sql.toString());
@@ -222,6 +226,7 @@ public class DataIngestionService {
         TransactionParseResult result =
                 transactionParser.parse(file.getInputStream());
 
+        System.out.println("result get");
 
         bulkAccountUpsert(result.getAccounts());
 
