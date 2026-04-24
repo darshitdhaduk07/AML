@@ -34,7 +34,7 @@ public class JwtService {
         claims.put("role", user.getRole().name());
 
         if (user.getRole() != Role.SYSTEM_ADMIN) {
-            claims.put("tenantId", user.getTenantId());
+            claims.put("tenant", user.getTenantId());
         }
 
         if (user.getRole() == Role.COMPLIANCE_OFFICER) {

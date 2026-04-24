@@ -16,4 +16,6 @@ public class GlobalConstants {
     };
 
     public static final String UPLOAD_DIR = "uploads/";
+
+    public static final String DB_NAME = "aml";
 }

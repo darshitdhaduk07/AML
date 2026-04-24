@@ -45,7 +45,13 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
             TenantContext.setTenant(body.getTenant());
         }
 
-        TenantAuthenticationToken token = new TenantAuthenticationToken(body.getEmail(), body.getPassword(), body.getTenant(), body.getRole());
+        TenantAuthenticationToken token =
+                new TenantAuthenticationToken(
+                        body.getEmail(),
+                        body.getPassword(),
+                        body.getTenant(),
+                        body.getRole()
+                );
 
         return getAuthenticationManager().authenticate(token);
     }
@@ -62,7 +68,11 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
     }
 
     @Override
-    protected void unsuccessfulAuthentication(@NonNull HttpServletRequest request, HttpServletResponse response, @NonNull AuthenticationException ex) throws IOException {
+    protected void unsuccessfulAuthentication(
+            @NonNull HttpServletRequest request,
+            HttpServletResponse response,
+            @NonNull AuthenticationException ex
+    ) throws IOException {
 
         response.setStatus(401);
 
