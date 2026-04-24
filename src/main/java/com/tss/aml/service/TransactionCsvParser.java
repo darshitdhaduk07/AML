@@ -1,5 +1,10 @@
 package com.tss.aml.service;
 
+import com.tss.aml.dto.result.ParseAccount;
+import com.tss.aml.dto.result.ParseTransaction;
+import com.tss.aml.dto.result.TransactionParseResult;
+import com.tss.aml.enums.AccountType;
+import com.tss.aml.tenant.entity.Account;
 import com.tss.aml.tenant.entity.Transaction;
 import com.tss.aml.enums.Direction;
 import com.tss.aml.enums.TransactionType;
@@ -14,46 +19,56 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.tss.aml.constant.GlobalConstants.CSV_DELIMITER;
 import static com.tss.aml.constant.GlobalConstants.TRANSACTION_EXPECTED_HEADERS;
 
 @Component
 public class TransactionCsvParser {
+    private final Map<String, ParseAccount> accountMap = new HashMap<>();
+    private final List<ParseTransaction> transactions = new ArrayList<>();
+    private final List<String> errors = new ArrayList<>();
 
-    public List<Transaction> parse(InputStream inputStream) throws IOException {
-        List<Transaction> transactions = new ArrayList<>();
-        List<String> errors = new ArrayList<>();
+    public TransactionParseResult parse(InputStream inputStream) throws IOException {
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-            String headerLine = reader.readLine();
 
+            String headerLine = reader.readLine();
             if (headerLine == null) throw new IllegalArgumentException("CSV file is empty");
 
             validateHeaders(headerLine.trim().split(CSV_DELIMITER));
 
             String line;
-            int lineNumber = 2; // starts after header
+            int lineNumber = 2;
 
             while ((line = reader.readLine()) != null) {
-                if (line.isBlank()) { lineNumber++; continue; }
+
+                if (line.isBlank()) {
+                    lineNumber++;
+                    continue;
+                }
 
                 try {
-                    Transaction transaction = parseLine(line.trim(), lineNumber);
-                    transactions.add(transaction);
+                    parseLine(line,lineNumber);
                 } catch (Exception e) {
                     errors.add("Line " + lineNumber + ": " + e.getMessage());
                 }
+
                 lineNumber++;
             }
         }
 
         if (!errors.isEmpty()) {
-            throw new CsvParseException("CSV parsing failed with errors:\n" + String.join("\n", errors));
+            throw new CsvParseException("Errors:\n" + String.join("\n", errors));
         }
 
-        return transactions;
+        return new TransactionParseResult(
+                transactions,
+                new ArrayList<>(accountMap.values())
+        );
     }
 
     private void validateHeaders(String[] actualHeaders) {
@@ -69,26 +84,54 @@ public class TransactionCsvParser {
         }
     }
 
-    private Transaction parseLine(String line, int lineNumber) {
-        String[] fields = line.split(CSV_DELIMITER, -1); // -1 keeps trailing empty strings
+    private void parseLine(String line, int lineNumber) {
+
+        String[] fields = line.split(CSV_DELIMITER, -1);
 
         if (fields.length != TRANSACTION_EXPECTED_HEADERS.length) {
-            throw new IllegalArgumentException(
-                    "Expected " + TRANSACTION_EXPECTED_HEADERS.length + " columns but got " + fields.length
-            );
+            throw new IllegalArgumentException("Invalid column count");
         }
 
-        Transaction transaction = new Transaction();
-        transaction.setTransactionNumber(require(fields[0], "transaction_number"));
-//        transaction.setA(require(fields[1],     "account_number"));
-//        transaction.setCustomerNumber(require(fields[2],    "customer_number"));
-        transaction.setTxnTime(parseDateTime(fields[3],     "txn_time"));
-        transaction.setAmount(parseDecimal(fields[4],       "amount"));
-        transaction.setTxnType(parseEnum(fields[5],         "txn_type", TransactionType.class));
-        transaction.setDirection(parseEnum(fields[6],       "direction", Direction.class));
-        transaction.setCountry(require(fields[7],           "country"));
-        System.out.println(transaction);
-        return transaction;
+        String transactionNumber = require(fields[0], "transaction_number");
+        String accountNumber = require(fields[1], "account_number");
+        String customerNumber = require(fields[2], "customer_number");
+
+        LocalDateTime txnTime = parseDateTime(fields[3], "txn_time");
+        BigDecimal amount = parseDecimal(fields[4], "amount");
+        TransactionType txnType = parseEnum(fields[5], "txn_type", TransactionType.class);
+        Direction direction = parseEnum(fields[6], "direction", Direction.class);
+        String country = require(fields[7], "country");
+
+        AccountType accountType = parseEnum(fields[8], "account_type", AccountType.class);
+        String ifsc = require(fields[9], "IFSC");
+
+        ParseAccount existing = accountMap.get(accountNumber);
+
+        if (existing == null) {
+            ParseAccount acc = new ParseAccount();
+            acc.setAccountNumber(accountNumber);
+            acc.setAccountType(accountType);
+            acc.setIFSC(ifsc);
+            acc.setCustomerNumber(customerNumber);
+
+            accountMap.put(accountNumber, acc);
+        }
+
+        ParseTransaction t = new ParseTransaction();
+
+        t.setTransactionNumber(transactionNumber);
+        t.setAccountType(accountType);
+        t.setTxnTime(txnTime);
+        t.setAmount(amount);
+        t.setTxnType(txnType);
+        t.setDirection(direction);
+        t.setCountry(country);
+        t.setIFSC(ifsc);
+        t.setAccountNumber(accountNumber);
+        t.setCustomerNumber(customerNumber);
+
+        transactions.add(t);
+
     }
 
     // --- helpers ---
