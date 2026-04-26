@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Entity
 @Table(name = "broken_rules")
 @Getter
@@ -11,10 +14,25 @@ import lombok.Setter;
 public class BrokenRules extends BaseEntity{
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "case_id", nullable = false)
-    private Case caseEntity;
+    @JoinColumn(name = "transaction_id", nullable = false)
+    private Transaction transaction;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_number", referencedColumnName = "customerNumber", nullable = false)
+    private Customer customer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "selected_rule_id", nullable = false)
     private SelectedRule rule;
+
+    @Column
+    private UUID group_id;
+
+    @Column
+    private Boolean active;
+
+    @PrePersist
+    public void prePersist() {
+        this.active = true;
+    }
 }

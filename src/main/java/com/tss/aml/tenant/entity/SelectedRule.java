@@ -28,6 +28,6 @@ public class SelectedRule extends BaseEntity{
     @Column(columnDefinition = "jsonb")
     private Map<String, Object> parameters;
 
-    private UUID ruleTemplateId;
+//    private UUID ruleTemplateId;
 
 }

@@ -1,14 +1,15 @@
 package com.tss.aml.rule_engine.rule_template;
 
-import com.tss.aml.tenant.entity.Transaction;
-import tools.jackson.databind.JsonNode;
+import com.tss.aml.tenant.entity.Customer;
+import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
+import java.util.Map;
 
 //Per [Duration] Day/s Transaction Frequency [Greater] than [threshold]
-public class RL_002 implements IRuleTemplate {
+@Service
+public class RL_002 implements CustomerRuleTemplate {
     @Override
-    public boolean check(Transaction txn, JsonNode parameters) {
+    public boolean check(Customer customer, Map<String, Object> parameters) {
         return false;
     }
 }

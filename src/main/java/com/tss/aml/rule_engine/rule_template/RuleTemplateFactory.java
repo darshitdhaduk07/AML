@@ -1,26 +1,46 @@
 package com.tss.aml.rule_engine.rule_template;
 
+import com.tss.aml.enums.RuleType;
+import com.tss.aml.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 public class RuleTemplateFactory {
-    private final Map<String, IRuleTemplate> ruleTemplateMap;
+    private final Map<RuleType, Map<String, IRuleTemplate>> ruleTemplates;
 
     public RuleTemplateFactory(List<IRuleTemplate> ruleTemplates) {
-        this.ruleTemplateMap = ruleTemplates.stream()
-                .collect(Collectors.toMap(s->s.getClass().getSimpleName(), s->s));
+        this.ruleTemplates = new HashMap<>();
+        Map<String, IRuleTemplate> transactionRuleTemplates = new HashMap<>();
+        Map<String, IRuleTemplate> customerRuleTemplates = new HashMap<>();
+
+        ruleTemplates.forEach(ruleTemplate -> {
+            if(ruleTemplate.getRuleType() == RuleType.CUSTOMER){
+                customerRuleTemplates.put(ruleTemplate.getClass().getSimpleName(), ruleTemplate);
+            }
+            else{
+                transactionRuleTemplates.put(ruleTemplate.getClass().getSimpleName(), ruleTemplate);
+            }
+        });
+
+        this.ruleTemplates.put(RuleType.CUSTOMER, customerRuleTemplates);
+        this.ruleTemplates.put(RuleType.TRANSACTION, transactionRuleTemplates);
+
     }
 
-    public IRuleTemplate getRuleTemplate(String ruleTemplateName) {
-        return ruleTemplateMap.get(ruleTemplateName);
+    public IRuleTemplate getRuleTemplate(String ruleTemplateCode) {
+        if(ruleTemplates.get(RuleType.CUSTOMER).containsKey(ruleTemplateCode)){
+            return ruleTemplates.get(RuleType.CUSTOMER).get(ruleTemplateCode);
+        }
+        else if(ruleTemplates.get(RuleType.TRANSACTION).containsKey(ruleTemplateCode)){
+            return ruleTemplates.get(RuleType.TRANSACTION).get(ruleTemplateCode);
+        }
+
+        throw new ResourceNotFoundException("ruleTemplate", ruleTemplateCode);
     }
 
-    public Set<String> getRuleTemplates(){
-        return ruleTemplateMap.keySet();
+    public Set<IRuleTemplate> getRuleTemplatesByType(RuleType type){
+        return new HashSet<>(ruleTemplates.get(type).values());
     }
 }
