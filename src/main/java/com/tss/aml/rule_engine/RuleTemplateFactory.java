@@ -1,7 +1,8 @@
-package com.tss.aml.rule_engine.rule_template;
+package com.tss.aml.rule_engine;
 
 import com.tss.aml.enums.RuleType;
 import com.tss.aml.exception.ResourceNotFoundException;
+import com.tss.aml.rule_engine.rule_template.IRuleTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;

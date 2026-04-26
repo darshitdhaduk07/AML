@@ -12,16 +12,4 @@ import java.util.List;
 @RequestMapping("/bank-admin")
 @RequiredArgsConstructor
 public class BankAdminController {
-
-    private final BankAdminRepository repo;
-
-    @PostMapping
-    public BankAdmin create(@RequestBody BankAdmin admin) {
-        return repo.save(admin);
-    }
-
-    @GetMapping
-    public List<BankAdmin> getAll() {
-        return repo.findAll();
-    }
 }

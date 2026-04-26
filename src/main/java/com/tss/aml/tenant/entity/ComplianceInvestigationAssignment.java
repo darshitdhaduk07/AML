@@ -7,7 +7,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "alerts")
+@Table(name = "compliance_investigation_assignment")
 @Getter
 @Setter
 public class ComplianceInvestigationAssignment extends BaseEntity{

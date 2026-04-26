@@ -34,12 +34,12 @@ public class JwtService {
         claims.put("role", user.getRole().name());
 
         if (user.getRole() != Role.SYSTEM_ADMIN) {
-            claims.put("tenant", user.getTenantId());
+            claims.put("tenant", user.getTenant().substring(7));
         }
 
-        if (user.getRole() == Role.COMPLIANCE_OFFICER) {
-            claims.put("authorities", user.getAuthorities());
-        }
+//        if (user.getRole() == Role.COMPLIANCE_OFFICER) {
+//            claims.put("authorities", user.getAuthorities());
+//        }
 
         return Jwts.builder()
                 .setClaims(claims)

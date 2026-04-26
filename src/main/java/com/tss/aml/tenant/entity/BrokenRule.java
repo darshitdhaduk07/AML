@@ -4,14 +4,13 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "broken_rules")
 @Getter
 @Setter
-public class BrokenRules extends BaseEntity{
+public class BrokenRule extends BaseEntity{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "transaction_id", nullable = false)

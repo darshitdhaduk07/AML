@@ -1,15 +1,14 @@
 package com.tss.aml.service;
 
+import com.tss.aml.context.TenantContext;
 import com.tss.aml.dto.result.ParseAccount;
 import com.tss.aml.dto.result.ParseTransaction;
 import com.tss.aml.dto.result.TransactionParseResult;
-import com.tss.aml.tenant.entity.Account;
 import com.tss.aml.tenant.entity.Customer;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.Transaction;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,6 +27,8 @@ public class DataIngestionService {
     private final EntityManager entityManager;
     private final CustomerCsvParser csvParser;
     private final TransactionCsvParser transactionParser;
+    private final RuleEngineService ruleEngineService;
+    private final AppUserService appUserService;
 
     private void bulkCustomerUpsert(List<Customer> customers) {
         int batchSize = 500;
@@ -41,6 +42,13 @@ public class DataIngestionService {
     }
 
     private void upsertCustomerBatch(List<Customer> batch) {
+
+        Object schema = entityManager
+                .createNativeQuery("select current_schema()")
+                .getSingleResult();
+
+        System.out.println("DB Schema = " + schema);
+
         StringBuilder sql = new StringBuilder("""
                 INSERT INTO customers (
                     id, customer_number, first_name, middle_name,
@@ -94,7 +102,7 @@ public class DataIngestionService {
 
     }
 
-    @Async
+//    @Async
     @Transactional
     public void ingestCustomersFromFile(MultipartFile file) throws IOException {
         bulkCustomerUpsert(csvParser.parse(file.getInputStream()));
@@ -219,17 +227,14 @@ public class DataIngestionService {
         }
     }
 
-    @Async
+//    @Async
     @Transactional
     public void ingestTransactionsFromFile(MultipartFile file) throws IOException {
 
         TransactionParseResult result =
                 transactionParser.parse(file.getInputStream());
 
-        System.out.println("result get");
-
         bulkAccountUpsert(result.getAccounts());
-
 
         bulkTransactionUpsert(result.getTransactions());
     }

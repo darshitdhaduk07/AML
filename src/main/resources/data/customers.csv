@@ -1,0 +1,3 @@
+customer_number,first_name,middle_name,last_name,family_code,dob,occupation,nationality_country,country_of_birth,income,net_worth
+C1,OK,OK1,OK2,1,2004-09-21,BUSINESS,IND,IND,2100000,2000000000
+C2,HI,HI1,HI2,1,2004-08-23,JOB,IND,PAK,200000,130000000
