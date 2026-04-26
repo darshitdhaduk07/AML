@@ -42,14 +42,14 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
         if (body.getRole().equals("SYSTEM_ADMIN")) {
             TenantContext.setTenant("master");
         } else {
-            TenantContext.setTenant(body.getTenant());
+            TenantContext.setTenant("tenant_" + body.getTenant());
         }
 
         TenantAuthenticationToken token =
                 new TenantAuthenticationToken(
                         body.getEmail(),
                         body.getPassword(),
-                        body.getTenant(),
+                        "tenant_" + body.getTenant(),
                         body.getRole()
                 );
 

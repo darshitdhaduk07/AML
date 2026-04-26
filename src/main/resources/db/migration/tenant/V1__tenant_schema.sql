@@ -2,22 +2,38 @@ create table accounts (
                           id uuid not null,
                           created_at timestamp(6) not null,
                           updated_at timestamp(6),
+                          ifsc varchar(255) not null,
                           account_number varchar(20) not null,
                           account_type varchar(255) not null check ((account_type in ('SAVINGS','CURRENT','LOAN','WALLET','NRE','DEMAT'))),
-                          customer_number uuid not null,
+                          customer_number varchar(255) not null,
                           primary key (id)
 );
 
-create table alerts (
+create table compliance_investigation_assignment (
                         id uuid not null,
                         created_at timestamp(6) not null,
                         updated_at timestamp(6),
+                        is_open boolean,
                         risk_score numeric(38,2),
-                        "case.id" uuid,
-                        transaction_number uuid,
+                        compliance_officer_id uuid,
+                        customer_number varchar(255),
                         primary key (id)
 );
-
+create table authority (
+                           id uuid not null,
+                           created_at timestamp(6) not null,
+                           updated_at timestamp(6),
+                           authority_name varchar(255) check ((authority_name in ('MAKER','CHECKER'))),
+                           primary key (id)
+);
+create table authority_mapper (
+                                  id uuid not null,
+                                  created_at timestamp(6) not null,
+                                  updated_at timestamp(6),
+                                  authority_id uuid,
+                                  co_officer_id uuid,
+                                  primary key (id)
+);
 create table bank_admins (
                              id uuid not null,
                              created_at timestamp(6) not null,
@@ -34,11 +50,13 @@ create table broken_rules (
                               id uuid not null,
                               created_at timestamp(6) not null,
                               updated_at timestamp(6),
-                              case_id uuid not null,
+                              active boolean,
+                              group_id uuid,
+                              customer_number varchar(255) not null,
                               selected_rule_id uuid not null,
+                              transaction_id uuid not null,
                               primary key (id)
 );
-
 create table cases (
                        id uuid not null,
                        created_at timestamp(6) not null,
@@ -46,9 +64,9 @@ create table cases (
                        case_description varchar(1000),
                        case_name varchar(255) not null,
                        case_status varchar(255) not null check ((case_status in ('OPEN','ASSIGNED','CLOSED','ESCALATED'))),
+                       investigated_customer uuid not null,
                        primary key (id)
 );
-
 create table compliance_officers (
                                      id uuid not null,
                                      created_at timestamp(6) not null,
@@ -61,7 +79,6 @@ create table compliance_officers (
                                      password varchar(255) not null,
                                      primary key (id)
 );
-
 create table customers (
                            id uuid not null,
                            created_at timestamp(6) not null,
@@ -87,7 +104,6 @@ create table selected_rules (
                                 description varchar(255),
                                 parameters jsonb,
                                 rule_code varchar(255) not null,
-                                rule_template_id uuid,
                                 weight integer,
                                 primary key (id)
 );
@@ -101,93 +117,113 @@ create table transactions (
                               amount numeric(19,4) not null,
                               country varchar(3) not null,
                               direction varchar(255) not null check ((direction in ('CR','DR'))),
+                              evaluated boolean default false not null,
                               transaction_number varchar(255) not null,
                               txn_time timestamp(6) not null,
                               txn_type varchar(255) not null check ((txn_type in ('CASH_DEPOSIT','NEFT','UPI','IMPS','ATM','RTGS'))),
-                              account_number uuid not null,
-                              customer_number uuid not null,
+                              account_number varchar(20) not null,
+                              customer_number varchar(255) not null,
                               primary key (id)
 );
+alter table if exists accounts
+drop constraint if exists uk_account_number;
 
 alter table if exists accounts
-drop constraint if exists unique_account_number;
+    add constraint uk_account_number unique (account_number);
 
-alter table if exists accounts
-    add constraint unique_account_number unique (account_number);
+alter table if exists compliance_investigation_assignment
+drop constraint if exists UK94eehv22l33uvmut9jvb61nr3;
 
-alter table if exists alerts
-drop constraint if exists unique_case_id;
-
-alter table if exists alerts
-    add constraint unique_case_id unique ("case.id");
-
-alter table if exists alerts
-drop constraint if exists unique_alert_transaction_number;
-
-alter table if exists alerts
-    add constraint unique_alert_transaction_number unique (transaction_number);
+alter table if exists compliance_investigation_assignment
+    add constraint UK94eehv22l33uvmut9jvb61nr3 unique (customer_number);
 
 alter table if exists bank_admins
-drop constraint if exists unique_admin_email;
+drop constraint if exists UKjchx5c1ch69p23ybse300w1qk;
 
 alter table if exists bank_admins
-    add constraint unique_admin_email unique (email);
+    add constraint UKjchx5c1ch69p23ybse300w1qk unique (email);
+
+alter table if exists cases
+drop constraint if exists UKaaa78ncvyqn4wo8uty1a766tc;
+
+alter table if exists cases
+    add constraint UKaaa78ncvyqn4wo8uty1a766tc unique (investigated_customer);
 
 alter table if exists compliance_officers
-drop constraint if exists unique_co_email;
+drop constraint if exists UKqhk9hcyhhnv3pue19ikp8d8l3;
 
 alter table if exists compliance_officers
-    add constraint unique_co_email unique (email);
+    add constraint UKqhk9hcyhhnv3pue19ikp8d8l3 unique (email);
 
 alter table if exists customers
-drop constraint if exists unique_customer_number;
+drop constraint if exists UKt74y58jagthxqxysuw9l0jx6y;
 
 alter table if exists customers
-    add constraint unique_customer_number unique (customer_number);
+    add constraint UKt74y58jagthxqxysuw9l0jx6y unique (customer_number);
 
 alter table if exists selected_rules
-drop constraint if exists unique_rule_code;
+drop constraint if exists UK74dn2yd5pkojeq2wryy6bn97h;
 
 alter table if exists selected_rules
-    add constraint unique_rule_code unique (rule_code);
+    add constraint UK74dn2yd5pkojeq2wryy6bn97h unique (rule_code);
 
 alter table if exists transactions
-drop constraint if exists unique_transaction_number;
+drop constraint if exists UK3w93192dhkdixcb3xncuf84pj;
 
 alter table if exists transactions
-    add constraint unique_transaction_number unique (transaction_number);
+    add constraint UK3w93192dhkdixcb3xncuf84pj unique (transaction_number);
 
 alter table if exists accounts
-    add constraint fk_customer_number
+    add constraint FKpkh474o4gfwkrygw1bksoe13a
     foreign key (customer_number)
-    references customers;
+    references customers (customer_number);
 
-alter table if exists alerts
-    add constraint fk_case_id
-    foreign key ("case.id")
-    references cases;
+alter table if exists compliance_investigation_assignment
+    add constraint FKavxn2q8sy21pm7bujba18uf0l
+    foreign key (compliance_officer_id)
+    references compliance_officers;
 
-alter table if exists alerts
-    add constraint fk_transaction_number
-    foreign key (transaction_number)
-    references transactions;
+alter table if exists compliance_investigation_assignment
+    add constraint FK4lyhp3jd4mmj51xh57afx62ts
+    foreign key (customer_number)
+    references customers (customer_number);
+
+alter table if exists authority_mapper
+    add constraint FKdmteynf7sieidylxr4o4d702g
+    foreign key (authority_id)
+    references authority;
+
+alter table if exists authority_mapper
+    add constraint FK8u6l5bxuww6afs1imvcnvvh2r
+    foreign key (co_officer_id)
+    references compliance_officers;
 
 alter table if exists broken_rules
-    add constraint fk_case_id
-    foreign key (case_id)
-    references cases;
+    add constraint FK4i05sthc21v22nl2ldg1etdry
+    foreign key (customer_number)
+    references customers (customer_number);
 
 alter table if exists broken_rules
-    add constraint fk_selected_rule_id
+    add constraint FKdnoxurpbrxlv3abm32bc3qwql
     foreign key (selected_rule_id)
     references selected_rules;
 
-alter table if exists transactions
-    add constraint fk_account_number
-    foreign key (account_number)
-    references accounts;
+alter table if exists broken_rules
+    add constraint FK90pg57ph9ghub4qyneaq3opfi
+    foreign key (transaction_id)
+    references transactions;
+
+alter table if exists cases
+    add constraint FKn7uf36iinopxwtor9o8n4his3
+    foreign key (investigated_customer)
+    references compliance_investigation_assignment;
 
 alter table if exists transactions
-    add constraint fk_customer_number
+    add constraint FK2u05e77l3gh3l82xcjk2iyhr2
+    foreign key (account_number)
+    references accounts (account_number);
+
+alter table if exists transactions
+    add constraint FKpdsuhyf6271ychpdxvce6krcx
     foreign key (customer_number)
-    references customers;
+    references customers (customer_number);
