@@ -3,8 +3,11 @@ package com.tss.aml.service;
 import com.tss.aml.dto.result.ParseAccount;
 import com.tss.aml.dto.result.ParseTransaction;
 import com.tss.aml.dto.result.TransactionParseResult;
+import com.tss.aml.exception.BulkValidationException;
+import com.tss.aml.exception.ValidationException;
 import com.tss.aml.tenant.entity.Account;
 import com.tss.aml.tenant.entity.Customer;
+import com.tss.aml.tenant.repository.CustomerRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
@@ -28,6 +31,7 @@ public class DataIngestionService {
     private final EntityManager entityManager;
     private final CustomerCsvParser csvParser;
     private final TransactionCsvParser transactionParser;
+    private final CustomerRepository customerRepository;
 
     private void bulkCustomerUpsert(List<Customer> customers) {
         int batchSize = 500;
@@ -218,8 +222,28 @@ public class DataIngestionService {
             entityManager.clear();
         }
     }
+    private void validateCustomersExist(List<ParseAccount> accounts) {
 
-    @Async
+        List<ValidationException> errors = new ArrayList<>();
+
+        for (ParseAccount acc : accounts) {
+            if (!customerRepository.existsByCustomerNumber(acc.getCustomerNumber())) {
+                errors.add(new ValidationException(
+                        "customer_number",
+                        acc.getCustomerNumber(),
+                        "INVALID_REFERENCE",
+                        "Customer does not exist",
+                        -1
+                ));
+            }
+        }
+
+        if (!errors.isEmpty()) {
+            throw new BulkValidationException(errors);
+        }
+    }
+
+//    @Async
     @Transactional
     public void ingestTransactionsFromFile(MultipartFile file) throws IOException {
 
@@ -228,9 +252,9 @@ public class DataIngestionService {
 
         System.out.println("result get");
 
+        validateCustomersExist(result.getAccounts());
+
         bulkAccountUpsert(result.getAccounts());
-
-
         bulkTransactionUpsert(result.getTransactions());
     }
 

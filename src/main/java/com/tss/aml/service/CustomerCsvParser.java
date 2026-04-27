@@ -1,5 +1,7 @@
 package com.tss.aml.service;
 
+import com.tss.aml.exception.BulkValidationException;
+import com.tss.aml.exception.ValidationException;
 import com.tss.aml.tenant.entity.Customer;
 import com.tss.aml.exception.CsvParseException;
 import org.springframework.stereotype.Component;
@@ -22,12 +24,12 @@ public class CustomerCsvParser {
 
     public List<Customer> parse(InputStream inputStream) throws IOException {
         List<Customer> customers = new ArrayList<>();
-        List<String> errors = new ArrayList<>();
+        List<ValidationException> errors = new ArrayList<>();
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             String headerLine = reader.readLine();
 
-            if (headerLine == null) throw new IllegalArgumentException("CSV file is empty");
+            if (headerLine == null) throw new CsvParseException("CSV file is empty");
 
             validateHeaders(headerLine.trim().split(CSV_DELIMITER));
 
@@ -35,20 +37,24 @@ public class CustomerCsvParser {
             int lineNumber = 2; // starts after header
 
             while ((line = reader.readLine()) != null) {
-                if (line.isBlank()) { lineNumber++; continue; }
+                if (line.isBlank()) {
+                    lineNumber++;
+                    continue;
+                }
 
                 try {
                     Customer customer = parseLine(line.trim(), lineNumber);
                     customers.add(customer);
-                } catch (Exception e) {
-                    errors.add("Line " + lineNumber + ": " + e.getMessage());
+                } catch (BulkValidationException e) {
+                    System.out.println(e);
+                    errors.addAll(e.getErrors());
                 }
                 lineNumber++;
             }
-        }
 
-        if (!errors.isEmpty()) {
-            throw new CsvParseException("CSV parsing failed with errors:\n" + String.join("\n", errors));
+            if (!errors.isEmpty()) {
+                throw new BulkValidationException(errors);
+            }
         }
 
         return customers;
@@ -58,7 +64,7 @@ public class CustomerCsvParser {
         for (int i = 0; i < CUSTOMER_EXPECTED_HEADERS.length; i++) {
             if (i >= actualHeaders.length ||
                     !CUSTOMER_EXPECTED_HEADERS[i].equalsIgnoreCase(actualHeaders[i].trim())) {
-                throw new IllegalArgumentException(
+                throw new CsvParseException(
                         "Invalid header at column " + (i + 1) +
                                 ": expected '" + CUSTOMER_EXPECTED_HEADERS[i] +
                                 "' but got '" + (i < actualHeaders.length ? actualHeaders[i] : "missing") + "'"
@@ -70,53 +76,108 @@ public class CustomerCsvParser {
     private Customer parseLine(String line, int lineNumber) {
         String[] fields = line.split(CSV_DELIMITER, -1); // -1 keeps trailing empty strings
 
+        List<ValidationException> rowErrors = new ArrayList<>();
+
         if (fields.length != CUSTOMER_EXPECTED_HEADERS.length) {
-            throw new IllegalArgumentException(
-                    "Expected " + CUSTOMER_EXPECTED_HEADERS.length + " columns but got " + fields.length
+            throw new ValidationException(
+                    "row",
+                    line,
+                    "INVALID_COLUMN_COUNT",
+                    "Expected " + CUSTOMER_EXPECTED_HEADERS.length +
+                            " columns but got " + fields.length,
+                    lineNumber
             );
         }
 
         Customer customer = new Customer();
-        customer.setCustomerNumber(require(fields[0],  "customer_number"));
-        customer.setFirstName(require(fields[1],       "first_name"));
+        customer.setCustomerNumber(require(fields[0], "customer_number", lineNumber,rowErrors,null));
+        customer.setFirstName(require(fields[1], "first_name", lineNumber,rowErrors,null));
         customer.setMiddleName(nullable(fields[2]));   // optional
-        customer.setLastName(require(fields[3],        "last_name"));
+        customer.setLastName(require(fields[3], "last_name", lineNumber,rowErrors,null));
         customer.setFamilyCode(nullable(fields[4]));   // optional
-        customer.setDob(parseDate(fields[5],           "dob"));
-        customer.setOccupation(require(fields[6],      "occupation"));
-        customer.setNationalityCountry(require(fields[7], "nationality_country"));
-        customer.setCountryOfBirth(require(fields[8],  "country_of_birth"));
-        customer.setIncome(parseDecimal(fields[9],     "income"));
-        customer.setNetWorth(parseDecimal(fields[10],  "net_worth"));
+        customer.setDob(parseDate(fields[5], "dob", lineNumber,rowErrors));
+        customer.setOccupation(require(fields[6], "occupation", lineNumber,rowErrors,null));
+        customer.setNationalityCountry(require(fields[7], "nationality_country", lineNumber,rowErrors,3));
+        customer.setCountryOfBirth(require(fields[8], "country_of_birth", lineNumber,rowErrors,3));
+        customer.setIncome(parseDecimal(fields[9], "income", lineNumber,rowErrors));
+        customer.setNetWorth(parseDecimal(fields[10], "net_worth", lineNumber,rowErrors));
         System.out.println(customer);
+
+        if (!rowErrors.isEmpty()) {
+            throw new BulkValidationException(rowErrors);
+        }
         return customer;
+
+
     }
 
     // --- helpers ---
 
-    private String require(String value, String fieldName) {
-        if (value == null || value.isBlank())
-            throw new IllegalArgumentException("'" + fieldName + "' is required");
-        return value.trim();
+    private String require(String value, String fieldName, int lineNumber,List<ValidationException> rowErrors,        Integer maxLength   // 👈 ADD THIS
+    ) {
+        if (value == null || value.isBlank()) {
+             rowErrors.add(new ValidationException(
+                    fieldName,
+                    value,
+                    "MISSING_FIELD",
+                    fieldName + " is required",
+                    lineNumber
+            ));
+             return null;
+        }
+        String trimmed = value.trim();
+
+        if (maxLength != null && trimmed.length() > maxLength) {
+            rowErrors.add(new ValidationException(
+                    fieldName,
+                    value,
+                    "MAX_LENGTH_EXCEEDED",
+                    fieldName + " must be <= " + maxLength + " characters",
+                    lineNumber
+            ));
+            return null;
+        }
+
+        return trimmed;
     }
 
     private String nullable(String value) {
         return (value == null || value.isBlank()) ? null : value.trim();
     }
 
-    private LocalDate parseDate(String value, String fieldName) {
+    private LocalDate parseDate(String value, String fieldName, int lineNumber, List<ValidationException> rowErrors) {
+        String v = require(value, fieldName, lineNumber, rowErrors,null);
+        if (v == null) return null;
+
         try {
-            return LocalDate.parse(require(value, fieldName)); // expects yyyy-MM-dd
+            return LocalDate.parse(v);
         } catch (DateTimeParseException e) {
-            throw new IllegalArgumentException("'" + fieldName + "' must be yyyy-MM-dd format, got: " + value);
+            rowErrors.add(new ValidationException(
+                    fieldName,
+                    value,
+                    "INVALID_DATE_FORMAT",
+                    fieldName + " must be yyyy-MM-dd format",
+                    lineNumber
+            ));
+            return null;
         }
     }
 
-    private BigDecimal parseDecimal(String value, String fieldName) {
+    private BigDecimal parseDecimal(String value, String fieldName, int lineNumber, List<ValidationException> rowErrors) {
+        String v = require(value, fieldName, lineNumber, rowErrors,null);
+        if (v == null) return null;
+
         try {
-            return new BigDecimal(require(value, fieldName));
+            return new BigDecimal(v);
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("'" + fieldName + "' must be a valid number, got: " + value);
+            rowErrors.add(new ValidationException(
+                    fieldName,
+                    value,
+                    "INVALID_NUMBER",
+                    fieldName + " must be a valid number",
+                    lineNumber
+            ));
+            return null;
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.tss.aml.service;
 
 import com.tss.aml.dto.request.RegisterRequestDto;
+import com.tss.aml.exception.BusinessException;
 import com.tss.aml.master.repository.TenantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,7 @@ public class TenantRegistrationService {
         String schemaName = generateSchemaName(request.getTenantName());
 
         if (tenantRepository.findBySchemaName(schemaName).isPresent()) {
-            throw new RuntimeException("Tenant already exists");
+            throw new BusinessException("Tenant already exists");
         }
 
         migrationService.runFlyWay(schemaName);

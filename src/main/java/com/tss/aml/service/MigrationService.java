@@ -3,6 +3,7 @@ package com.tss.aml.service;
 import com.tss.aml.context.TenantContext;
 import com.tss.aml.dto.request.RegisterRequestDto;
 import com.tss.aml.enums.TenantStatus;
+import com.tss.aml.exception.MigrationException;
 import com.tss.aml.master.entity.Tenant;
 import com.tss.aml.master.repository.TenantRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ import static com.tss.aml.constant.GlobalConstants.DB_NAME;
 public class MigrationService {
 
     private final TenantRepository tenantRepository;
-//    private final JdbcTemplate jdbcTemplate;
+    //    private final JdbcTemplate jdbcTemplate;
     private final DataSource dataSource;
 
 //    public void createSchema(String schemaName){
@@ -32,7 +33,7 @@ public class MigrationService {
 //        }
 //    }
 
-    public void runFlyWay(String schemaName){
+    public void runFlyWay(String schemaName) {
         try {
             Flyway flyway = Flyway.configure()
                     .dataSource(dataSource)
@@ -48,14 +49,14 @@ public class MigrationService {
             flyway.migrate();
             System.out.println("HOHO1");
             System.out.println("heello3");
-
-        }
-        catch(Exception e){
-            throw new RuntimeException("Tenant registration failed: " + e.getMessage());
+        } catch (Exception e) {
+            throw new MigrationException(
+                    "Flyway migration failed for schema: " + schemaName
+            );
         }
     }
 
-    public void saveTenant(String schemaName, RegisterRequestDto request){
+    public void saveTenant(String schemaName, RegisterRequestDto request) {
         Tenant tenant = new Tenant();
         tenant.setTenantName(request.getTenantName());
         tenant.setSchemaName(schemaName);
