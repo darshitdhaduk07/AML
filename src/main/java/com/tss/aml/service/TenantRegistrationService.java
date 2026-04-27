@@ -1,6 +1,6 @@
 package com.tss.aml.service;
 
-import com.tss.aml.dto.request.RegisterRequestDto;
+import com.tss.aml.dto.request.TenantRegisterRequestDto;
 import com.tss.aml.exception.BusinessException;
 import com.tss.aml.context.TenantContext;
 import com.tss.aml.dto.request.TenantRegisterRequestDto;

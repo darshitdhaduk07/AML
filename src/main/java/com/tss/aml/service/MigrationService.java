@@ -57,7 +57,7 @@ public class MigrationService {
         }
     }
 
-    public void saveTenant(String schemaName, RegisterRequestDto request) {
+    public void saveTenant(String schemaName, TenantRegisterRequestDto request) {
         Tenant tenant = new Tenant();
         tenant.setTenantName(request.getTenantName());
         tenant.setSchemaName(schemaName);
