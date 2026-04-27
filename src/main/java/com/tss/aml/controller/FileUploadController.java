@@ -3,14 +3,18 @@ package com.tss.aml.controller;
 import com.tss.aml.service.DataIngestionService;
 import com.tss.aml.service.RuleEngineService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import static com.tss.aml.constant.GlobalConstants.UPLOAD_DIR;
 
@@ -26,6 +30,7 @@ public class FileUploadController {
     @PreAuthorize("hasRole('BANK_ADMIN')")
     public ResponseEntity<String> upload(@RequestParam("file") MultipartFile file) {
 
+        System.out.println(LocalDateTime.now());
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body("File is empty");
         }
@@ -59,16 +64,20 @@ public class FileUploadController {
 
             dataIngestionService.ingestCustomersFromFile(file);
 
+            System.out.println(LocalDateTime.now());
+
             return ResponseEntity.ok("Uploaded: " + fileName);
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
+
     }
 
     @PostMapping("/transactions")
     @PreAuthorize("hasRole('BANK_ADMIN')")
+    @Transactional
     public ResponseEntity<String> uploadTransactions(@RequestParam("file") MultipartFile file) {
 
         if (file.isEmpty()) {
