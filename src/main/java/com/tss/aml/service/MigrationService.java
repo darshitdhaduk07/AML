@@ -1,14 +1,13 @@
 package com.tss.aml.service;
 
-import com.tss.aml.context.TenantContext;
-import com.tss.aml.dto.request.RegisterRequestDto;
+import com.tss.aml.dto.request.TenantRegisterRequestDto;
 import com.tss.aml.enums.TenantStatus;
 import com.tss.aml.exception.MigrationException;
 import com.tss.aml.master.entity.Tenant;
 import com.tss.aml.master.repository.TenantRepository;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.flywaydb.core.Flyway;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
@@ -21,7 +20,9 @@ public class MigrationService {
 
     private final TenantRepository tenantRepository;
     //    private final JdbcTemplate jdbcTemplate;
+
     private final DataSource dataSource;
+    private final EntityManager entityManager;
 
 //    public void createSchema(String schemaName){
 //        try {
@@ -64,8 +65,6 @@ public class MigrationService {
         tenant.setDbName(DB_NAME);
 
         tenantRepository.save(tenant);
-
-        TenantContext.setTenant(schemaName);
     }
 
 }

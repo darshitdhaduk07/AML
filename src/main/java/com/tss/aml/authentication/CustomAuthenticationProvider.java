@@ -43,7 +43,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         user.setAuthorities(grantedAuthorities);
         user.setRole(role);
         user.setUsername(email);
-        user.setTenantId(TenantContext.getTenant());
+        user.setTenant(TenantContext.getTenant());
 
         switch (role) {
             case BANK_ADMIN:

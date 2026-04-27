@@ -44,7 +44,6 @@ public class Transaction extends BaseEntity {
     @Column(nullable = false)
     private String IFSC;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_number",referencedColumnName = "customerNumber", nullable = false)
     private Customer customer;
@@ -52,4 +51,7 @@ public class Transaction extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_number",referencedColumnName = "accountNumber",nullable = false)
     private Account account;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private Boolean evaluated;
 }

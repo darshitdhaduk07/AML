@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.UUID;
 
@@ -28,6 +29,6 @@ public class SelectedRule extends BaseEntity{
     @Column(columnDefinition = "jsonb")
     private Map<String, Object> parameters;
 
-    private UUID ruleTemplateId;
+//    private UUID ruleTemplateId;
 
 }
