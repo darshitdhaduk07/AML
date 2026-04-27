@@ -1,6 +1,8 @@
 package com.tss.aml.controller;
 
-import com.tss.aml.dto.request.RegisterRequestDto;
+import com.tss.aml.dto.request.ComplianceOfficerRegisterRequestDto;
+import com.tss.aml.dto.request.TenantRegisterRequestDto;
+import com.tss.aml.service.ComplianceOfficerRegistrationService;
 import com.tss.aml.service.TenantRegistrationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,16 +14,20 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final TenantRegistrationService service;
+    private final TenantRegistrationService tenantRegistrationService;
+    private final ComplianceOfficerRegistrationService complianceOfficerRegistrationService;
 
-    @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequestDto request) {
-        service.registerTenant(request);
+    @PostMapping("/register/tenant")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
+    public ResponseEntity<String> registerTenant(@RequestBody TenantRegisterRequestDto request) {
+        tenantRegistrationService.registerTenant(request);
         return ResponseEntity.ok("Tenant Registered Successfully");
     }
 
-    @PostMapping("/hi")
-    public ResponseEntity<String> hi(){
-        return ResponseEntity.ok("Hi");
+    @PostMapping("/register/co")
+    @PreAuthorize("hasRole('BANK_ADMIN')")
+    public ResponseEntity<String> registerComplianceOfficer(@RequestBody ComplianceOfficerRegisterRequestDto request){
+        complianceOfficerRegistrationService.registerCO(request);
+        return ResponseEntity.ok("Compliance Officer Registered Successfully");
     }
 }

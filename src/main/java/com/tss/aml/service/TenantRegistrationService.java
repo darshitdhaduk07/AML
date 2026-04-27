@@ -1,9 +1,13 @@
 package com.tss.aml.service;
 
-import com.tss.aml.dto.request.RegisterRequestDto;
+import com.tss.aml.dto.request.TenantRegisterRequestDto;
+import com.tss.aml.exception.BusinessException;
+import com.tss.aml.context.TenantContext;
+import com.tss.aml.dto.request.TenantRegisterRequestDto;
 import com.tss.aml.master.repository.TenantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -13,16 +17,18 @@ public class TenantRegistrationService {
     private final MigrationService migrationService;
     private final BankAdminRegistrationService bankAdminRegistrationService;
 
-    public void registerTenant(RegisterRequestDto request) {
+    @Transactional
+    public void registerTenant(TenantRegisterRequestDto request) {
 
         String schemaName = generateSchemaName(request.getTenantName());
 
         if (tenantRepository.findBySchemaName(schemaName).isPresent()) {
-            throw new RuntimeException("Tenant already exists");
+            throw new BusinessException("Tenant already exists");
         }
 
         migrationService.runFlyWay(schemaName);
         migrationService.saveTenant(schemaName, request);
+        TenantContext.setTenant(schemaName);
         bankAdminRegistrationService.registerAdmin(request);
     }
 

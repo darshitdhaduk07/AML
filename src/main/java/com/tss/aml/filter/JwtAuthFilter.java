@@ -75,29 +75,31 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         } else if ("BANK_ADMIN".equals(role)) {
             if (tenant == null || tenant.isBlank()) {
-                sendError(res, "TOKEN_INVALID", "Missing tenantId for BANK_ADMIN");
+                sendError(res, "TOKEN_INVALID", "Missing tenant for BANK_ADMIN");
                 return;
             }
-            TenantContext.setTenant(tenant);
+            TenantContext.setTenant("tenant_" + tenant);
 
         } else if ("COMPLIANCE_OFFICER".equals(role)) {
             if (tenant == null || tenant.isBlank()) {
-                sendError(res, "TOKEN_INVALID", "Missing tenantId for COMPLIANCE_OFFICER");
+                sendError(res, "TOKEN_INVALID", "Missing tenant for COMPLIANCE_OFFICER");
                 return;
             }
-            TenantContext.setTenant(tenant);
+            TenantContext.setTenant("tenant_" + tenant);
 
-            List<String> auths = claims.get("authorities", List.class);
-            if (auths == null || auths.isEmpty()) {
-                sendError(res, "TOKEN_INVALID", "COMPLIANCE_OFFICER must have authorities");
-                return;
-            }
-            auths.forEach(a -> authorities.add(new SimpleGrantedAuthority("AUTH_" + a)));
+//            List<String> auths = claims.get("authorities", List.class);
+//            if (auths == null || auths.isEmpty()) {
+//                sendError(res, "TOKEN_INVALID", "COMPLIANCE_OFFICER must have authorities");
+//                return;
+//            }
+//            auths.forEach(a -> authorities.add(new SimpleGrantedAuthority("AUTH_" + a)));
 
         } else {
             sendError(res, "TOKEN_INVALID", "Unknown role: " + role);
             return;
         }
+
+
 
         // Step 4 — set Spring Security context
 
@@ -105,7 +107,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         dto.setUsername(claims.get("sub").toString());
         dto.setRole(Role.valueOf(claims.get("role").toString()));
-        if (claims.get("tenant") != null) dto.setTenantId(claims.get("tenant").toString());
+        if (claims.get("tenant") != null) dto.setTenant(claims.get("tenant").toString());
         dto.setAuthorities(List.of(new SimpleGrantedAuthority("Role_" + role)));
 
         TenantAuthenticationToken auth = new TenantAuthenticationToken(dto, authorities);

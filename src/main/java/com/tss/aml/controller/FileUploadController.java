@@ -1,8 +1,10 @@
 package com.tss.aml.controller;
 
 import com.tss.aml.service.DataIngestionService;
+import com.tss.aml.service.RuleEngineService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,8 +20,10 @@ import static com.tss.aml.constant.GlobalConstants.UPLOAD_DIR;
 public class FileUploadController {
 
     private final DataIngestionService dataIngestionService;
+    private final RuleEngineService ruleEngineService;
 
     @PostMapping("/customers")
+    @PreAuthorize("hasRole('BANK_ADMIN')")
     public ResponseEntity<String> upload(@RequestParam("file") MultipartFile file) {
 
         if (file.isEmpty()) {
@@ -64,6 +68,7 @@ public class FileUploadController {
     }
 
     @PostMapping("/transactions")
+    @PreAuthorize("hasRole('BANK_ADMIN')")
     public ResponseEntity<String> uploadTransactions(@RequestParam("file") MultipartFile file) {
 
         if (file.isEmpty()) {
@@ -97,6 +102,8 @@ public class FileUploadController {
             file.transferTo(targetLocation);
 
             dataIngestionService.ingestTransactionsFromFile(file);
+
+            ruleEngineService.applyRules();
 
             return ResponseEntity.ok("Uploaded: " + fileName);
 

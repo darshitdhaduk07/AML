@@ -19,7 +19,7 @@ public class PasswordGenerator {
         String word2 = capitalizeRandom(WORDS[RANDOM.nextInt(WORDS.length)]);
         int number = 100 + RANDOM.nextInt(900);
 
-        char symbol = "!@#$%".charAt(RANDOM.nextInt(5));
+        char symbol = "!@#%".charAt(RANDOM.nextInt(5));
 
         return word1 + number + symbol + word2;
     }

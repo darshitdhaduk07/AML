@@ -18,7 +18,7 @@ public class AppUser implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    private String tenantId; // null for SYSTEM_ADMIN
+    private String tenant; // null for SYSTEM_ADMIN
 
     @ElementCollection(fetch = FetchType.EAGER)
     private List<SimpleGrantedAuthority> authorities; // ["MAKER", "CHECKER"] for COMPLIANCE_OFFICER

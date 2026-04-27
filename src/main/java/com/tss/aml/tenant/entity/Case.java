@@ -24,7 +24,8 @@ public class Case extends BaseEntity{
     @Column(nullable = false)
     private CaseStatus caseStatus;
 
-    @OneToMany(mappedBy = "assignedCase",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
-    List<Alert> alerts;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "investigated_customer", nullable = false)
+    ComplianceInvestigationAssignment investigatedCustomer;
 
 }
