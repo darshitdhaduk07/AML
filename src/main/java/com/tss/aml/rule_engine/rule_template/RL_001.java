@@ -11,14 +11,14 @@ import java.util.Map;
 public class RL_001 implements TransactionRuleTemplate {
     @Override
     public boolean check(Transaction txn, Map<String, Object> parameters) {
-        long threshold = Long.parseLong(parameters.get("threshold").toString());
+        int threshold = Integer.parseInt(parameters.get("threshold").toString());
         return txn.getAmount().compareTo(new BigDecimal(threshold)) > 0;
     }
 
     @Override
     public Map<String, ParameterMeta> getRequiredParameters() {
         return Map.of(
-                "threshold", new ParameterMeta(Double.class, true, true)
+                "threshold", new ParameterMeta(Integer.class, true, true)
         );
     }
 

@@ -1,5 +1,7 @@
 package com.tss.aml.service;
 
+import com.tss.aml.dto.request.TenantRegisterRequestDto;
+import com.tss.aml.exception.BusinessException;
 import com.tss.aml.context.TenantContext;
 import com.tss.aml.dto.request.TenantRegisterRequestDto;
 import com.tss.aml.master.repository.TenantRepository;
@@ -21,7 +23,7 @@ public class TenantRegistrationService {
         String schemaName = generateSchemaName(request.getTenantName());
 
         if (tenantRepository.findBySchemaName(schemaName).isPresent()) {
-            throw new RuntimeException("Tenant already exists");
+            throw new BusinessException("Tenant already exists");
         }
 
         migrationService.runFlyWay(schemaName);
