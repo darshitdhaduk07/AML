@@ -22,7 +22,9 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -231,19 +233,25 @@ public class DataIngestionService {
             entityManager.clear();
         }
     }
-    private void validateCustomersExist(List<ParseAccount> accounts) {
-
+    private void validateCustomersExist(List<ParseAccount> allAccounts) {
+        int batchSize = 500;
         List<ValidationException> errors = new ArrayList<>();
 
-        for (ParseAccount acc : accounts) {
-            if (!customerRepository.existsByCustomerNumber(acc.getCustomerNumber())) {
-                errors.add(new ValidationException(
-                        "customer_number",
-                        acc.getCustomerNumber(),
-                        "INVALID_REFERENCE",
-                        "Customer does not exist",
-                        -1
-                ));
+        for (int i = 0; i < allAccounts.size(); i += batchSize) {
+            List<ParseAccount> batch = allAccounts.subList(i, Math.min(i + batchSize, allAccounts.size()));
+
+            Set<String> batchCustomerNumbers = batch.stream()
+                    .map(ParseAccount::getCustomerNumber)
+                    .collect(Collectors.toSet());
+
+            Set<String> existingDbCustomers = customerRepository.findExistingCustomerNumbers(batchCustomerNumbers);
+
+            for (String csvCustomer : batchCustomerNumbers) {
+                if (!existingDbCustomers.contains(csvCustomer)) {
+                    errors.add(new ValidationException(
+                            "customer_number", csvCustomer, "INVALID_REFERENCE", "Customer does not exist", -1
+                    ));
+                }
             }
         }
 
