@@ -51,6 +51,7 @@ create table broken_rules (
                               created_at timestamp(6) not null,
                               updated_at timestamp(6),
                               active boolean,
+                              false_positive boolean,
                               group_id uuid,
                               customer_number varchar(255) not null,
                               selected_rule_id uuid not null,
@@ -160,12 +161,6 @@ drop constraint if exists UKt74y58jagthxqxysuw9l0jx6y;
 
 alter table if exists customers
     add constraint UKt74y58jagthxqxysuw9l0jx6y unique (customer_number);
-
-alter table if exists selected_rules
-drop constraint if exists UK74dn2yd5pkojeq2wryy6bn97h;
-
-alter table if exists selected_rules
-    add constraint UK74dn2yd5pkojeq2wryy6bn97h unique (rule_code);
 
 alter table if exists transactions
 drop constraint if exists UK3w93192dhkdixcb3xncuf84pj;

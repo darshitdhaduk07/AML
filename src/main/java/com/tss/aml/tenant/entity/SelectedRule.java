@@ -16,7 +16,7 @@ import java.util.UUID;
 @Setter
 public class SelectedRule extends BaseEntity{
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String ruleCode;
 
     @Column
