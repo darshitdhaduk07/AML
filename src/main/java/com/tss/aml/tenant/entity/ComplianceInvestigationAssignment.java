@@ -27,7 +27,9 @@ public class ComplianceInvestigationAssignment extends BaseEntity{
 
     @PrePersist
     public void prePersist() {
-        this.isOpen = false;
+        this.isOpen = true;
+        this.riskScore = BigDecimal.ZERO;
     }
+
 
 }

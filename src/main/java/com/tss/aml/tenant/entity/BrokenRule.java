@@ -28,10 +28,14 @@ public class BrokenRule extends BaseEntity{
     private UUID group_id;
 
     @Column
+    private Boolean falsePositive;
+
+    @Column
     private Boolean active;
 
     @PrePersist
     public void prePersist() {
         this.active = true;
+        this.falsePositive = false;
     }
 }
