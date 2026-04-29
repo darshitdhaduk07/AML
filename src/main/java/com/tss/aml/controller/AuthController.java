@@ -2,7 +2,9 @@ package com.tss.aml.controller;
 
 import com.tss.aml.dto.request.ComplianceOfficerRegisterRequestDto;
 import com.tss.aml.dto.request.TenantRegisterRequestDto;
+import com.tss.aml.dto.request.VerifyRequest;
 import com.tss.aml.service.ComplianceOfficerRegistrationService;
+import com.tss.aml.service.JwtService;
 import com.tss.aml.service.TenantRegistrationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,7 @@ public class AuthController {
 
     private final TenantRegistrationService tenantRegistrationService;
     private final ComplianceOfficerRegistrationService complianceOfficerRegistrationService;
+    private final JwtService jwtService;
 
     @PostMapping("/register/tenant")
     @PreAuthorize("hasRole('SYSTEM_ADMIN')")
@@ -29,5 +32,11 @@ public class AuthController {
     public ResponseEntity<String> registerComplianceOfficer(@RequestBody ComplianceOfficerRegisterRequestDto request){
         complianceOfficerRegistrationService.registerCO(request);
         return ResponseEntity.ok("Compliance Officer Registered Successfully");
+    }
+
+    @PostMapping("/verify")
+    public ResponseEntity<Boolean> verifyJwt(@RequestBody VerifyRequest request){
+        System.out.println("Hii");
+        return ResponseEntity.ok(jwtService.verifyToken(request.getAuth_token()));
     }
 }
