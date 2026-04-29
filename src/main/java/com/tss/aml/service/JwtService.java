@@ -1,10 +1,11 @@
 package com.tss.aml.service;
 
-import com.tss.aml.dto.request.LoginRequestDto;
 import com.tss.aml.enums.Role;
 import com.tss.aml.model.AppUser;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +17,8 @@ import java.util.*;
 
 @Service
 public class JwtService {
-
+    @Autowired
+    private BlacklistService blacklistService;
 //    @Value("${jwt.secret}")
     private String secret;
 
@@ -61,5 +63,17 @@ public class JwtService {
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes());
+    }
+
+    public boolean verifyToken(String token) {
+        System.out.println(token);
+        Claims claims;
+        try {
+            claims = this.extractAllClaims(token);
+        } catch (Exception e) {
+            return false;
+        }
+
+        return !blacklistService.isBlacklisted(UUID.fromString(claims.getId()));
     }
 }
