@@ -14,6 +14,7 @@ import com.tss.aml.tenant.repository.TransactionRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RuleEngineService {
 
     private final RuleTemplateFactory ruleTemplateFactory;
@@ -36,8 +38,11 @@ public class RuleEngineService {
 
     @Transactional
     public void applyRules() {
+        log.info("Starting rule application process");
         List<Transaction> unevaluatedTransactions = transactionRepository.findByEvaluatedFalse();
         List<SelectedRule> selectedRules = selectedRuleRepository.findAll();
+
+        log.info("Found {} unevaluated transactions and {} active rules", unevaluatedTransactions.size(), selectedRules.size());
 
         Set<Customer> unevaluatedCustomers = new HashSet<>();
         List<BrokenRule> pendingBrokenRules = new ArrayList<>();
@@ -94,12 +99,17 @@ public class RuleEngineService {
         }
 
         if (!pendingBrokenRules.isEmpty()) {
+            log.info("Saving {} broken rules to database", pendingBrokenRules.size());
             bulkInsertBrokenRules(pendingBrokenRules);
+        } else {
+            log.info("No broken rules detected");
         }
 
         if (!unevaluatedTransactions.isEmpty()) {
+            log.info("Marking {} transactions as evaluated", unevaluatedTransactions.size());
             bulkUpdateTransactionsAsEvaluated(unevaluatedTransactions);
         }
+        log.info("Rule application process completed");
     }
 
     private void bulkInsertBrokenRules(List<BrokenRule> brokenRules) {

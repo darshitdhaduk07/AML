@@ -3,6 +3,7 @@ package com.tss.aml.config.multitenancy;
 import lombok.AllArgsConstructor;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -10,6 +11,7 @@ import java.sql.SQLException;
 
 @Component
 @AllArgsConstructor
+@Slf4j
 public class MultiTenantConnectionProviderImpl implements MultiTenantConnectionProvider<String> {
 
     private final DataSource dataSource;
@@ -27,7 +29,7 @@ public class MultiTenantConnectionProviderImpl implements MultiTenantConnectionP
     @Override
     public Connection getConnection(String tenantIdentifier) throws SQLException {
         Connection connection = getAnyConnection();
-        System.out.println("Provider tenant = " + tenantIdentifier);
+        log.debug("Setting database connection schema to: {}", tenantIdentifier);
 
         connection.setSchema(tenantIdentifier);
 
