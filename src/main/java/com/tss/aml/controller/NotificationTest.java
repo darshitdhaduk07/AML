@@ -21,12 +21,12 @@ public class NotificationTest {
     @PostMapping("/send")
     public void sendMail()
     {
-        try{
-            Map<String, Object> variables = new HashMap<>();
-            notificationService.sendNotification("darshitcoc123@gmail.com", NotificationType.TEST, variables);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+//        try{
+//            Map<String, Object> variables = new HashMap<>();
+//            notificationService.sendNotification("darshitcoc123@gmail.com", NotificationType.TEST, variables);
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
 
     }
     @GetMapping("/hello")

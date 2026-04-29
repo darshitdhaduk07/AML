@@ -21,6 +21,7 @@ import static com.tss.aml.constant.GlobalConstants.UPLOAD_DIR;
 @RestController
 @RequestMapping("/api/files")
 @RequiredArgsConstructor
+@Slf4j
 public class FileUploadController {
 
     private final DataIngestionService dataIngestionService;
@@ -29,9 +30,9 @@ public class FileUploadController {
     @PostMapping("/customers")
     @PreAuthorize("hasRole('BANK_ADMIN')")
     public ResponseEntity<String> upload(@RequestParam("file") MultipartFile file) {
-
-        System.out.println(LocalDateTime.now());
+        log.info("Received request to upload customer file: {}", file.getOriginalFilename());
         if (file.isEmpty()) {
+            log.warn("Upload failed: File is empty");
             return ResponseEntity.badRequest().body("File is empty");
         }
 
@@ -58,18 +59,16 @@ public class FileUploadController {
 
             Path targetLocation = uploadPath.resolve(fileName);
 
-            System.out.println("Saving to: " + targetLocation);
-
+            log.debug("Saving file to: {}", targetLocation);
             file.transferTo(targetLocation);
 
             dataIngestionService.ingestCustomersFromFile(file);
 
-            System.out.println(LocalDateTime.now());
-
+            log.info("Successfully uploaded and processed customer file: {}", fileName);
             return ResponseEntity.ok("Uploaded: " + fileName);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error during customer file upload: {}", fileName, e);
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
 
@@ -79,8 +78,9 @@ public class FileUploadController {
     @PreAuthorize("hasRole('BANK_ADMIN')")
     @Transactional
     public ResponseEntity<String> uploadTransactions(@RequestParam("file") MultipartFile file) {
-
+        log.info("Received request to upload transaction file: {}", file.getOriginalFilename());
         if (file.isEmpty()) {
+            log.warn("Upload failed: File is empty");
             return ResponseEntity.badRequest().body("File is empty");
         }
 
@@ -106,18 +106,18 @@ public class FileUploadController {
 
             Path targetLocation = uploadPath.resolve(fileName);
 
-            System.out.println("Saving to: " + targetLocation);
-
+            log.debug("Saving file to: {}", targetLocation);
             file.transferTo(targetLocation);
 
             dataIngestionService.ingestTransactionsFromFile(file);
 
             ruleEngineService.applyRules();
 
+            log.info("Successfully uploaded and processed transaction file: {}", fileName);
             return ResponseEntity.ok("Uploaded: " + fileName);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error during transaction file upload: {}", fileName, e);
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }

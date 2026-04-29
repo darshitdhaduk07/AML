@@ -4,6 +4,7 @@ import com.tss.aml.exception.BulkValidationException;
 import com.tss.aml.exception.ValidationException;
 import com.tss.aml.tenant.entity.Customer;
 import com.tss.aml.exception.CsvParseException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -20,6 +21,7 @@ import static com.tss.aml.constant.GlobalConstants.CSV_DELIMITER;
 import static com.tss.aml.constant.GlobalConstants.CUSTOMER_EXPECTED_HEADERS;
 
 @Component
+@Slf4j
 public class CustomerCsvParser {
 
     public List<Customer> parse(InputStream inputStream) throws IOException {
@@ -46,7 +48,7 @@ public class CustomerCsvParser {
                     Customer customer = parseLine(line.trim(), lineNumber);
                     customers.add(customer);
                 } catch (BulkValidationException e) {
-                    System.out.println(e);
+                    log.warn("Validation error on line {}: {}", lineNumber, e.getMessage());
                     errors.addAll(e.getErrors());
                 }
                 lineNumber++;
@@ -101,7 +103,7 @@ public class CustomerCsvParser {
         customer.setCountryOfBirth(require(fields[8], "country_of_birth", lineNumber,rowErrors,3));
         customer.setIncome(parseDecimal(fields[9], "income", lineNumber,rowErrors));
         customer.setNetWorth(parseDecimal(fields[10], "net_worth", lineNumber,rowErrors));
-        System.out.println(customer);
+        log.debug("Parsed customer: {}", customer.getCustomerNumber());
 
         if (!rowErrors.isEmpty()) {
             throw new BulkValidationException(rowErrors);

@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -16,6 +17,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 @Service
+@Slf4j
 public class JwtService {
     @Autowired
     private BlacklistService blacklistService;
@@ -66,11 +68,12 @@ public class JwtService {
     }
 
     public boolean verifyToken(String token) {
-        System.out.println(token);
+        log.debug("Verifying token: {}", token);
         Claims claims;
         try {
             claims = this.extractAllClaims(token);
         } catch (Exception e) {
+            log.warn("Token verification failed: {}", e.getMessage());
             return false;
         }
 
