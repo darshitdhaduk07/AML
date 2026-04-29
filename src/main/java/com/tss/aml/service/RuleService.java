@@ -69,6 +69,9 @@ public class RuleService {
                     dto.setRuleDescription(br.getRule().getDescription());
                     dto.setCustomer_number(br.getCustomer().getCustomerNumber());
                     dto.setTransaction_number(br.getTransaction().getTransactionNumber());
+                    dto.setRuleType(ruleTemplateFactory.getRuleTemplate(br.getRule().getRuleCode()).getRuleType());
+                    dto.setWeight(br.getRule().getWeight());
+                    dto.setRuleCode(br.getRule().getRuleCode());
 
                     return dto;
                 })
