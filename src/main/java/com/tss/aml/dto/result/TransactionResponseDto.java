@@ -21,6 +21,5 @@ public class TransactionResponseDto {
     private Direction direction;
     private String country;
     private String IFSC;
-    private Customer customer;
-    private Account account;
+    private String account;
 }

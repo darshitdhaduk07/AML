@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 
 @Data
 public class ComplianceInvestigationAssignmentResponseDto {
-    private Customer customer;
+    private CustomerResponseDto customerResponseDto;
     private BigDecimal riskScore;
     private Boolean isOpen;
 }

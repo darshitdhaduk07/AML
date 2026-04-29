@@ -6,6 +6,7 @@ import com.tss.aml.dto.result.ComplianceInvestigationAssignmentResponseDto;
 import com.tss.aml.dto.result.CustomerResponseDto;
 import com.tss.aml.enums.CaseStatus;
 import com.tss.aml.exception.ResourceNotFoundException;
+import com.tss.aml.mapper.CustomerResponseDtoMapper;
 import com.tss.aml.tenant.entity.BrokenRule;
 import com.tss.aml.tenant.entity.Case;
 import com.tss.aml.tenant.entity.ComplianceInvestigationAssignment;
@@ -26,6 +27,7 @@ public class InvestigationService {
     private final CaseRepository caseRepository;
     private final BrokenRuleRepository brokenRuleRepository;
     private final AppUserService appUserService;
+    private final CustomerResponseDtoMapper customerResponseDtoMapper;
 
     public void assignComplianceOfficer(ComplianceInvestigationAssignmentDto request) {
         if (complianceInvestigationAssignmentRepository.existsByCustomerCustomerNumberAndIsOpenTrue(request.getCustomerNumber())) {
@@ -100,7 +102,7 @@ public class InvestigationService {
                 .stream()
                 .map(I -> {
                             ComplianceInvestigationAssignmentResponseDto dto = new ComplianceInvestigationAssignmentResponseDto();
-                            dto.setCustomer(I.getCustomer());
+                            dto.setCustomerResponseDto(customerResponseDtoMapper.mapCustomer(I.getCustomer()));
                             dto.setRiskScore(I.getRiskScore());
                             dto.setIsOpen(I.getIsOpen());
 
