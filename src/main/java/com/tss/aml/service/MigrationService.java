@@ -7,6 +7,7 @@ import com.tss.aml.master.entity.Tenant;
 import com.tss.aml.master.repository.TenantRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import static com.tss.aml.constant.GlobalConstants.DB_NAME;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MigrationService {
 
     private final TenantRepository tenantRepository;
@@ -46,10 +48,9 @@ public class MigrationService {
                     .load();
 
 
-            System.out.println("Hello2");
+            log.info("Starting Flyway migration for schema: {}", schemaName);
             flyway.migrate();
-            System.out.println("HOHO1");
-            System.out.println("heello3");
+            log.info("Flyway migration completed successfully for schema: {}", schemaName);
         } catch (Exception e) {
             throw new MigrationException(
                     "Flyway migration failed for schema: " + schemaName

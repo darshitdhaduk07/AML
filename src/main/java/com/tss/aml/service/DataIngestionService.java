@@ -13,6 +13,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DataIngestionService {
 
     private final EntityManager entityManager;
@@ -54,7 +56,7 @@ public class DataIngestionService {
                 .createNativeQuery("select current_schema()")
                 .getSingleResult();
 
-        System.out.println("DB Schema = " + schema);
+        log.debug("Inserting customer batch into DB Schema = {}", schema);
 
         StringBuilder sql = new StringBuilder("""
                 INSERT INTO customers (
@@ -112,7 +114,11 @@ public class DataIngestionService {
 //    @Async
     @Transactional
     public void ingestCustomersFromFile(MultipartFile file) throws IOException {
-        bulkCustomerUpsert(csvParser.parse(file.getInputStream()));
+        log.info("Starting customer ingestion from file: {}", file.getOriginalFilename());
+        List<Customer> customers = csvParser.parse(file.getInputStream());
+        log.info("Parsed {} customers from file", customers.size());
+        bulkCustomerUpsert(customers);
+        log.info("Completed customer ingestion");
     }
 
     private void bulkTransactionUpsert(List<ParseTransaction> transactions) {
@@ -155,8 +161,7 @@ public class DataIngestionService {
             params.add(t.getCountry());
             params.add(t.getAccountType().name());
             params.add(t.getIFSC());
-            System.out.println("txn_type = " + t.getTxnType());
-            System.out.println("account_type = " + t.getAccountType());
+            log.debug("Processing transaction: number={}, type={}, account_type={}", t.getTransactionNumber(), t.getTxnType(), t.getAccountType());
         }
 
         sql.append("""
@@ -264,17 +269,18 @@ public class DataIngestionService {
 //    @Async
     @Transactional
     public void ingestTransactionsFromFile(MultipartFile file) throws IOException {
-
+        log.info("Starting transaction ingestion from file: {}", file.getOriginalFilename());
         TransactionParseResult result =
                 transactionParser.parse(file.getInputStream());
 
-        System.out.println("result get");
+        log.info("Parsed {} transactions and {} accounts", result.getTransactions().size(), result.getAccounts().size());
 
         validateCustomersExist(result.getAccounts());
 
         bulkAccountUpsert(result.getAccounts());
 
         bulkTransactionUpsert(result.getTransactions());
+        log.info("Completed transaction and account ingestion");
     }
 
 }

@@ -38,30 +38,41 @@ public class EmailNotificationService implements NotificationService {
 
     @Async
     @Override
-    public void sendNotification(String to, NotificationType type, Map<String, Object> variables) throws MessagingException {
-        Context context = new Context();
-        context.setVariables(variables);
+    public void sendNotification(String to, NotificationType type, Map<String, Object> variables){
 
-        // Map template + subject
-        String template = "";
-        String subject = "";
-        String contentTemplate = "";
+        try {
+            Context context = new Context();
+            context.setVariables(variables);
 
-        switch (type) {
-            case TEST:
-                subject = "Test";
-                contentTemplate = "email/test";
-                break;
+            String subject = "";
+            String contentTemplate = "";
+
+            switch (type) {
+                case BANK_ADMIN_REGISTERED:
+                    subject = "Welcome Bank Admin";
+                    contentTemplate = "email/bank-admin-welcome";
+                    break;
+                case CO_REGISTERED:
+                    subject = "Welcome Compliance Officer";
+                    contentTemplate = "email/co-welcome";
+                    break;
+            }
+
+            context.setVariable("contentTemplate", contentTemplate);
+            context.setVariable("title", subject);
+            String html = templateEngine.process(contentTemplate, context);
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(html, true);
+            mailSender.send(message);
+
+            log.info("Email sent successfully | to={} | type={}", to, type);
+
+        } catch (Exception e) {
+            log.error("Email sending failed | to={} | type={}", to, type, e);
         }
-        context.setVariable("contentTemplate", contentTemplate);
-        context.setVariable("title", subject);
-        String html = templateEngine.process("email/test", context);
-
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true);
-        helper.setTo(to);
-        helper.setSubject(subject);
-        helper.setText(html, true);
-        mailSender.send(message);
     }
 }

@@ -61,7 +61,7 @@ public class TransactionCsvParser {
                     parseLine(line, lineNumber,transactions);
                 } catch (BulkValidationException e) {
                     errors.addAll(e.getErrors());
-                    System.out.println(e);
+                    log.warn("Validation error on line {}: {}", lineNumber, e.getMessage());
                 }
 
                 lineNumber++;
