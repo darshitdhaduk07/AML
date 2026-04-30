@@ -24,7 +24,7 @@ public class RL_002 implements CustomerRuleTemplate {
     public List<Transaction> check(Customer customer, Map<String, Object> parameters) {
 
         int durationDays = (int) parameters.get("duration");
-        double threshold = (double) parameters.get("threshold");
+        int threshold = (int) parameters.get("threshold");
 
         LocalDateTime fromTime = LocalDateTime.now().minusDays(durationDays);
 
@@ -55,7 +55,7 @@ public class RL_002 implements CustomerRuleTemplate {
     public Map<String, ParameterMeta> getRequiredParameters() {
         return Map.of(
                 "duration", new ParameterMeta(Integer.class, true, true),
-                "threshold", new ParameterMeta(Double.class, true, true)
+                "threshold", new ParameterMeta(Integer.class, true, true)
         );
     }
 

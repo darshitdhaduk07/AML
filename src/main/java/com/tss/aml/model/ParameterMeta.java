@@ -1,5 +1,8 @@
 package com.tss.aml.model;
 
+import lombok.Data;
+
+@Data
 public class ParameterMeta {
 
     private final Class<?> type;

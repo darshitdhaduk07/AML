@@ -26,8 +26,9 @@ public class RuleService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void registerRule(SelectedRuleRegisterDto rule) {
         IRuleTemplate ruleTemplate = ruleTemplateFactory.getRuleTemplate(rule.getRuleCode());
-
-        if(!ruleTemplate.validateParameters(rule.getParameters(), ruleTemplate.getRequiredParameters())){
+        System.out.println(ruleTemplate.getRequiredParameters());
+        System.out.println(rule.getParameters());
+        if(!ruleTemplate.validateParameters(rule.getParameters(), ruleTemplate.getRequiredParameters())) {
             throw new ParameterMismatchException();
         }
 
