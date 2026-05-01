@@ -4,6 +4,7 @@ import com.tss.aml.dto.request.SelectedRuleRegisterDto;
 import com.tss.aml.dto.result.AlertResponseDto;
 import com.tss.aml.dto.result.SelectedRuleResponseDto;
 import com.tss.aml.exception.ParameterMismatchException;
+import com.tss.aml.mapper.CustomerResponseDtoMapper;
 import com.tss.aml.rule_engine.rule_template.IRuleTemplate;
 import com.tss.aml.rule_engine.RuleTemplateFactory;
 import com.tss.aml.tenant.entity.SelectedRule;
@@ -22,6 +23,7 @@ public class RuleService {
     private final SelectedRuleRepository selectedRuleRepository;
     private final RuleTemplateFactory ruleTemplateFactory;
     private final BrokenRuleRepository brokenRuleRepository;
+    private final CustomerResponseDtoMapper customerResponseDtoMapper;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void registerRule(SelectedRuleRegisterDto rule) {
@@ -69,7 +71,7 @@ public class RuleService {
                     dto.setGroup_id(br.getGroup_id());
                     dto.setRuleDescription(br.getRule().getDescription());
                     dto.setCustomer_number(br.getCustomer().getCustomerNumber());
-                    dto.setTransaction_number(br.getTransaction().getTransactionNumber());
+                    dto.setTransaction(customerResponseDtoMapper.mapTransaction(br.getTransaction()));
                     dto.setRuleType(ruleTemplateFactory.getRuleTemplate(br.getRule().getRuleCode()).getRuleType());
                     dto.setWeight(br.getRule().getWeight());
                     dto.setRuleCode(br.getRule().getRuleCode());

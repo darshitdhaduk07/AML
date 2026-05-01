@@ -36,9 +36,9 @@ public class InvestigationService {
 
         ComplianceInvestigationAssignment data = new ComplianceInvestigationAssignment();
         data.setComplianceOfficer(complianceOfficerRepository
-                .findById(request.getComplianceOfficerId())
+                .findByEmail(request.getComplianceOfficerEmail())
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Compliance Officer", request.getComplianceOfficerId())
+                        new ResourceNotFoundException("Compliance Officer", request.getComplianceOfficerEmail())
                 )
         );
 

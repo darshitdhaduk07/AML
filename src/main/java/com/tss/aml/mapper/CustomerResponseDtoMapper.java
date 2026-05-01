@@ -1,15 +1,21 @@
 package com.tss.aml.mapper;
 
+import com.tss.aml.dto.result.AlertResponseDto;
 import com.tss.aml.dto.result.CustomerResponseDto;
 import com.tss.aml.dto.result.TransactionResponseDto;
+import com.tss.aml.rule_engine.RuleTemplateFactory;
+import com.tss.aml.tenant.entity.BrokenRule;
 import com.tss.aml.tenant.entity.Customer;
 import com.tss.aml.tenant.entity.Transaction;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class CustomerResponseDtoMapper {
+    private final RuleTemplateFactory ruleTemplateFactory;
     public CustomerResponseDto mapCustomer(Customer customer) {
 
         CustomerResponseDto dto = new CustomerResponseDto();
@@ -26,13 +32,13 @@ public class CustomerResponseDtoMapper {
         dto.setIncome(customer.getIncome());
         dto.setNetWorth(customer.getNetWorth());
 
-        if (customer.getTransactions() != null) {
-            List<TransactionResponseDto> txns = customer.getTransactions()
+        if (customer.getAlerts() != null) {
+            List<AlertResponseDto> alerts = customer.getAlerts()
                     .stream()
-                    .map(this::mapTransaction)
+                    .map(this::mapAlert)
                     .toList();
 
-            dto.setTransactions(txns);
+            dto.setAlerts(alerts);
         }
 
         return dto;
@@ -51,6 +57,19 @@ public class CustomerResponseDtoMapper {
         dto.setAccount(t.getAccount().getAccountNumber());
         dto.setIFSC(t.getIFSC());
 
+        return dto;
+    }
+
+    public AlertResponseDto mapAlert(BrokenRule br) {
+        AlertResponseDto dto = new AlertResponseDto();
+        dto.setActive(br.getActive());
+        dto.setGroup_id(br.getGroup_id());
+        dto.setRuleDescription(br.getRule().getDescription());
+        dto.setCustomer_number(br.getCustomer().getCustomerNumber());
+        dto.setTransaction(mapTransaction(br.getTransaction()));
+        dto.setRuleType(ruleTemplateFactory.getRuleTemplate(br.getRule().getRuleCode()).getRuleType());
+        dto.setWeight(br.getRule().getWeight());
+        dto.setRuleCode(br.getRule().getRuleCode());
         return dto;
     }
 }

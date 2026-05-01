@@ -19,5 +19,5 @@ public class CustomerResponseDto {
     private String countryOfBirth;
     private BigDecimal income;
     private BigDecimal netWorth;
-    private List<TransactionResponseDto> transactions;
+    private List<AlertResponseDto> alerts;
 }

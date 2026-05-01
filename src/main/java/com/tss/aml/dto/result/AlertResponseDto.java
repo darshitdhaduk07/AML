@@ -8,7 +8,7 @@ import java.util.UUID;
 @Data
 public class AlertResponseDto {
     private String ruleCode;
-    private String transaction_number;
+    private TransactionResponseDto transaction;
     private String customer_number;
     private String ruleDescription;
     private UUID group_id;
