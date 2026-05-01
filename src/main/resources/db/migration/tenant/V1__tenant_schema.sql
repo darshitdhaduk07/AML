@@ -66,6 +66,7 @@ create table cases (
                        case_name varchar(255) not null,
                        case_status varchar(255) not null check ((case_status in ('OPEN','ASSIGNED','CLOSED','ESCALATED'))),
                        investigated_customer uuid not null,
+                        is_sar_filed boolean,
                        primary key (id)
 );
 create table compliance_officers (
