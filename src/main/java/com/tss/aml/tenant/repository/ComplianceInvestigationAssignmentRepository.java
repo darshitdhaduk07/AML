@@ -14,4 +14,10 @@ public interface ComplianceInvestigationAssignmentRepository extends JpaReposito
     Optional<ComplianceInvestigationAssignment> findByCustomerCustomerNumberAndIsOpenTrue(String customerNumber);
 
     Page<ComplianceInvestigationAssignment> findByComplianceOfficerId(UUID investigationAssignment, Pageable pageable);
+    
+    long countByComplianceOfficerId(UUID complianceOfficerId);
+
+    long countByComplianceOfficerIdAndIsOpenTrue(UUID complianceOfficerId);
+
+    long countByComplianceOfficerIdAndIsOpenFalse(UUID complianceOfficerId);
 }

@@ -29,4 +29,7 @@ public interface CaseRepository extends JpaRepository<Case, UUID> {
     List<CaseReportRow> getCaseDataByCustomer(String customerNumber);
 
     org.springframework.data.domain.Page<Case> findByCaseStatus(com.tss.aml.enums.CaseStatus status, org.springframework.data.domain.Pageable pageable);
+
+    @Query("SELECT c FROM Case c WHERE c.isSarFiled = true")
+    List<Case> findBySarFiledTrue();
 }
