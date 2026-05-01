@@ -2,14 +2,17 @@ package com.tss.aml.controller;
 
 import com.tss.aml.dto.request.CaseRequestDto;
 import com.tss.aml.dto.request.ComplianceInvestigationAssignmentDto;
+import com.tss.aml.dto.result.CaseResponseDto;
 import com.tss.aml.dto.result.ComplianceInvestigationAssignmentResponseDto;
+import com.tss.aml.dto.result.PaginatedResponseDto;
 import com.tss.aml.service.InvestigationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -33,6 +36,15 @@ public class InvestigationController {
         return ResponseEntity.ok("Case Created.");
     }
 
+    @GetMapping("/cases")
+    @PreAuthorize("hasRole('COMPLIANCE_OFFICER')")
+    public ResponseEntity<PaginatedResponseDto<CaseResponseDto>> getCases(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(investigationService.getCases(pageable));
+    }
+
     @PutMapping("/mark-false-positive/{brokenRuleId}")
     @PreAuthorize("hasRole('COMPLIANCE_OFFICER')")
     public ResponseEntity<String> markFalsePositive(@PathVariable UUID brokenRuleId){
@@ -42,8 +54,11 @@ public class InvestigationController {
 
     @GetMapping("/assignments")
     @PreAuthorize("hasRole('COMPLIANCE_OFFICER')")
-    public ResponseEntity<List<ComplianceInvestigationAssignmentResponseDto>> getAssignments(){
-        return ResponseEntity.ok(investigationService.getAssignments());
+    public ResponseEntity<PaginatedResponseDto<ComplianceInvestigationAssignmentResponseDto>> getAssignments(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(investigationService.getAssignments(pageable));
     }
 
     @PutMapping("/cases/{caseId}/escalate")

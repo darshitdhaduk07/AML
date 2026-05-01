@@ -2,20 +2,25 @@ package com.tss.aml.service;
 
 import com.tss.aml.dto.request.SelectedRuleRegisterDto;
 import com.tss.aml.dto.result.AlertResponseDto;
+import com.tss.aml.dto.result.PaginatedResponseDto;
 import com.tss.aml.dto.result.SelectedRuleResponseDto;
 import com.tss.aml.exception.ParameterMismatchException;
 import com.tss.aml.mapper.CustomerResponseDtoMapper;
 import com.tss.aml.rule_engine.rule_template.IRuleTemplate;
 import com.tss.aml.rule_engine.RuleTemplateFactory;
+import com.tss.aml.tenant.entity.BrokenRule;
 import com.tss.aml.tenant.entity.SelectedRule;
 import com.tss.aml.tenant.repository.BrokenRuleRepository;
 import com.tss.aml.tenant.repository.SelectedRuleRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,10 +50,10 @@ public class RuleService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public List<SelectedRuleResponseDto> getSelectedRules() {
-        return selectedRuleRepository
-                .findAll()
-                .stream()
+    public PaginatedResponseDto<SelectedRuleResponseDto> getSelectedRules(Pageable pageable) {
+        Page<SelectedRule> selectedRulePage = selectedRuleRepository.findAll(pageable);
+        
+        List<SelectedRuleResponseDto> dtos = selectedRulePage.getContent().stream()
                 .map(sr -> {
                     SelectedRuleResponseDto dto = new SelectedRuleResponseDto();
                     dto.setDescription(sr.getDescription());
@@ -58,13 +63,22 @@ public class RuleService {
 
                     return dto;
                 })
-                .toList();
+                .collect(Collectors.toList());
+
+        return PaginatedResponseDto.<SelectedRuleResponseDto>builder()
+                .content(dtos)
+                .pageNumber(selectedRulePage.getNumber())
+                .pageSize(selectedRulePage.getSize())
+                .totalElements(selectedRulePage.getTotalElements())
+                .totalPages(selectedRulePage.getTotalPages())
+                .last(selectedRulePage.isLast())
+                .build();
     }
 
-    public List<AlertResponseDto> getAlerts() {
-        return brokenRuleRepository
-                .findAll()
-                .stream()
+    public PaginatedResponseDto<AlertResponseDto> getAlerts(Pageable pageable) {
+        Page<BrokenRule> brokenRulePage = brokenRuleRepository.findByActiveTrue(pageable);
+        
+        List<AlertResponseDto> dtos = brokenRulePage.getContent().stream()
                 .map(br -> {
                     AlertResponseDto dto = new AlertResponseDto();
                     dto.setActive(br.getActive());
@@ -78,6 +92,15 @@ public class RuleService {
 
                     return dto;
                 })
-                .toList();
+                .collect(Collectors.toList());
+
+        return PaginatedResponseDto.<AlertResponseDto>builder()
+                .content(dtos)
+                .pageNumber(brokenRulePage.getNumber())
+                .pageSize(brokenRulePage.getSize())
+                .totalElements(brokenRulePage.getTotalElements())
+                .totalPages(brokenRulePage.getTotalPages())
+                .last(brokenRulePage.isLast())
+                .build();
     }
 }
