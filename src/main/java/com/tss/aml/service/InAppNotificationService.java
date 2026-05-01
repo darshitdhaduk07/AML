@@ -50,7 +50,7 @@ public class InAppNotificationService {
 
     public PaginatedResponseDto<InAppNotificationResponseDto> getNotificationsForRole(Role role, Pageable pageable) {
         String email = appUserService.get().getUsername();
-        Page<InAppNotification> notificationPage = inAppNotificationRepository.findByRecipientEmailAndRoleOrderByCreatedAtDesc(email, role, pageable);
+        Page<InAppNotification> notificationPage = inAppNotificationRepository.findByRecipientEmailAndRoleAndIsReadFalseOrderByCreatedAtDesc(email, role, pageable);
 
         return PaginatedResponseDto.<InAppNotificationResponseDto>builder()
                 .content(notificationPage.getContent().stream().map(this::convertToDto).collect(Collectors.toList()))

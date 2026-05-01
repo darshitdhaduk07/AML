@@ -14,4 +14,6 @@ public interface InAppNotificationRepository extends JpaRepository<InAppNotifica
     Page<InAppNotification> findByRecipientEmailOrderByCreatedAtDesc(String recipientEmail, Pageable pageable);
 
     Page<InAppNotification> findByRecipientEmailAndRoleOrderByCreatedAtDesc(String recipientEmail, Role role, Pageable pageable);
+
+    Page<InAppNotification> findByRecipientEmailAndRoleAndIsReadFalseOrderByCreatedAtDesc(String recipientEmail, Role role, Pageable pageable);
 }
