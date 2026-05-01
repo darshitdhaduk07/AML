@@ -3,6 +3,8 @@ package com.tss.aml.controller;
 import com.tss.aml.dto.request.ComplianceOfficerRegisterRequestDto;
 import com.tss.aml.dto.request.TenantRegisterRequestDto;
 import com.tss.aml.dto.request.VerifyRequest;
+import com.tss.aml.service.AppUserService;
+import com.tss.aml.service.BlacklistService;
 import com.tss.aml.service.ComplianceOfficerRegistrationService;
 import com.tss.aml.service.JwtService;
 import com.tss.aml.service.TenantRegistrationService;
@@ -21,6 +23,24 @@ public class AuthController {
     private final TenantRegistrationService tenantRegistrationService;
     private final ComplianceOfficerRegistrationService complianceOfficerRegistrationService;
     private final JwtService jwtService;
+    private final BlacklistService blacklistService;
+    private final AppUserService appUserService;
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            try {
+                var claims = jwtService.extractAllClaims(token);
+                var user = appUserService.get();
+                blacklistService.blacklist(claims, user.getId());
+                log.info("User {} logged out and token blacklisted", user.getUsername());
+            } catch (Exception e) {
+                log.warn("Logout cleanup failed: {}", e.getMessage());
+            }
+        }
+        return ResponseEntity.ok("Logged Out Successfully");
+    }
 
     @PostMapping("/register/tenant")
     @PreAuthorize("hasRole('SYSTEM_ADMIN')")

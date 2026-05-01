@@ -50,16 +50,19 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
                 BankAdmin bankAdmin = bankAdminRepo.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
                 if (!password.matches(bankAdmin.getPassword()))
                     throw new BadCredentialsException("Wrong Credentials");
+                user.setId(bankAdmin.getId());
                 break;
             case SYSTEM_ADMIN:
                 SystemAdmin systemAdmin = systemAdminRepo.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
                 if (!password.matches(systemAdmin.getPassword()))
                     throw new BadCredentialsException("Wrong Credentials");
+                user.setId(systemAdmin.getId());
                 break;
             case COMPLIANCE_OFFICER:
                 ComplianceOfficer complianceOfficer = complianceOfficerRepo.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
                 if (!password.matches(complianceOfficer.getPassword()))
                     throw new BadCredentialsException("Wrong Credentials");
+                user.setId(complianceOfficer.getId());
                 break;
             default:
                 throw new IllegalArgumentException("Invalid Role");

@@ -8,10 +8,12 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.List;
+import java.util.UUID;
 
 @Data
 public class AppUser implements UserDetails {
 
+    private UUID id;
     private String username;
     private String password;
 
