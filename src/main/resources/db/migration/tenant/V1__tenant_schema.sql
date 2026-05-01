@@ -126,6 +126,25 @@ create table transactions (
                               customer_number varchar(255) not null,
                               primary key (id)
 );
+
+CREATE TABLE in_app_notifications (
+                                      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+                                      recipient_email VARCHAR(255) NOT NULL,
+
+                                      role VARCHAR(50) NOT NULL check ((role in ('SYSTEM_ADMIN','BANK_ADMIN','COMPLIANCE_OFFICER'))),
+
+                                      message VARCHAR(1000) NOT NULL,
+
+                                      type VARCHAR(50) NOT NULL,
+
+                                      is_read BOOLEAN NOT NULL DEFAULT FALSE,
+
+                                      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+                                      updated_at TIMESTAMP
+);
+
 alter table if exists accounts
 drop constraint if exists uk_account_number;
 
