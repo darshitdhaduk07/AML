@@ -1,9 +1,10 @@
 package com.tss.aml.tenant.repository;
 
 import com.tss.aml.tenant.entity.ComplianceInvestigationAssignment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,5 +13,11 @@ public interface ComplianceInvestigationAssignmentRepository extends JpaReposito
 
     Optional<ComplianceInvestigationAssignment> findByCustomerCustomerNumberAndIsOpenTrue(String customerNumber);
 
-    List<ComplianceInvestigationAssignment> findByComplianceOfficerId(UUID investigationAssignment);
+    Page<ComplianceInvestigationAssignment> findByComplianceOfficerId(UUID investigationAssignment, Pageable pageable);
+    
+    long countByComplianceOfficerId(UUID complianceOfficerId);
+
+    long countByComplianceOfficerIdAndIsOpenTrue(UUID complianceOfficerId);
+
+    long countByComplianceOfficerIdAndIsOpenFalse(UUID complianceOfficerId);
 }

@@ -57,16 +57,18 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.badRequest().body(Map.of("errors", errorList));
     }
-        @ExceptionHandler(Exception.class)
-        public ResponseEntity<String> handleAnyException(
-                Exception exception,
-                HttpServletRequest request) {
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleAnyException(
+            Exception exception,
+            HttpServletRequest request) {
 
-
-            exception.printStackTrace();
-
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Something went wrong");
-        }
+        exception.printStackTrace();
+        
+        return buildErrorResponse(
+                "An unexpected error occurred. Please contact support.",
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                request,
+                null
+        );
+    }
     }

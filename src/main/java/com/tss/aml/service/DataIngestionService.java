@@ -38,6 +38,27 @@ public class DataIngestionService {
     private final RuleEngineService ruleEngineService;
     private final AppUserService appUserService;
     private final CustomerRepository customerRepository;
+    private final com.tss.aml.tenant.repository.BatchSummaryRepository batchSummaryRepository;
+
+    private void checkAndCreateTable() {
+        try {
+            entityManager.createNativeQuery("""
+                CREATE TABLE IF NOT EXISTS batch_summaries (
+                    id UUID PRIMARY KEY,
+                    created_at TIMESTAMP NOT NULL,
+                    updated_at TIMESTAMP,
+                    file_name VARCHAR(255) NOT NULL,
+                    file_type VARCHAR(255) NOT NULL,
+                    record_count BIGINT NOT NULL,
+                    status VARCHAR(255) NOT NULL,
+                    error_message VARCHAR(1000)
+                )
+            """).executeUpdate();
+            log.info("Verified batch_summaries table existence");
+        } catch (Exception e) {
+            log.warn("Failed to verify/create batch_summaries table: {}", e.getMessage());
+        }
+    }
 
     private void bulkCustomerUpsert(List<Customer> customers) {
         int batchSize = 500;
@@ -114,11 +135,30 @@ public class DataIngestionService {
 //    @Async
     @Transactional
     public void ingestCustomersFromFile(MultipartFile file) throws IOException {
+        checkAndCreateTable();
         log.info("Starting customer ingestion from file: {}", file.getOriginalFilename());
-        List<Customer> customers = csvParser.parse(file.getInputStream());
-        log.info("Parsed {} customers from file", customers.size());
-        bulkCustomerUpsert(customers);
-        log.info("Completed customer ingestion");
+        
+        com.tss.aml.tenant.entity.BatchSummary summary = new com.tss.aml.tenant.entity.BatchSummary();
+        summary.setFileName(file.getOriginalFilename());
+        summary.setFileType("CUSTOMER");
+        
+        try {
+            List<Customer> customers = csvParser.parse(file.getInputStream());
+            log.info("Parsed {} customers from file", customers.size());
+            summary.setRecordCount(customers.size());
+            
+            bulkCustomerUpsert(customers);
+            
+            summary.setStatus("SUCCESS");
+            log.info("Completed customer ingestion");
+        } catch (Exception e) {
+            summary.setStatus("FAILED");
+            summary.setErrorMessage(e.getMessage());
+            log.error("Customer ingestion failed", e);
+            throw e;
+        } finally {
+            batchSummaryRepository.save(summary);
+        }
     }
 
     private void bulkTransactionUpsert(List<ParseTransaction> transactions) {
@@ -269,18 +309,36 @@ public class DataIngestionService {
 //    @Async
     @Transactional
     public void ingestTransactionsFromFile(MultipartFile file) throws IOException {
+        checkAndCreateTable();
         log.info("Starting transaction ingestion from file: {}", file.getOriginalFilename());
-        TransactionParseResult result =
-                transactionParser.parse(file.getInputStream());
+        
+        com.tss.aml.tenant.entity.BatchSummary summary = new com.tss.aml.tenant.entity.BatchSummary();
+        summary.setFileName(file.getOriginalFilename());
+        summary.setFileType("TRANSACTION");
+        
+        try {
+            TransactionParseResult result =
+                    transactionParser.parse(file.getInputStream());
 
-        log.info("Parsed {} transactions and {} accounts", result.getTransactions().size(), result.getAccounts().size());
+            log.info("Parsed {} transactions and {} accounts", result.getTransactions().size(), result.getAccounts().size());
+            summary.setRecordCount(result.getTransactions().size());
 
-        validateCustomersExist(result.getAccounts());
+            validateCustomersExist(result.getAccounts());
 
-        bulkAccountUpsert(result.getAccounts());
+            bulkAccountUpsert(result.getAccounts());
 
-        bulkTransactionUpsert(result.getTransactions());
-        log.info("Completed transaction and account ingestion");
+            bulkTransactionUpsert(result.getTransactions());
+            
+            summary.setStatus("SUCCESS");
+            log.info("Completed transaction and account ingestion");
+        } catch (Exception e) {
+            summary.setStatus("FAILED");
+            summary.setErrorMessage(e.getMessage());
+            log.error("Transaction ingestion failed", e);
+            throw e;
+        } finally {
+            batchSummaryRepository.save(summary);
+        }
     }
 
 }

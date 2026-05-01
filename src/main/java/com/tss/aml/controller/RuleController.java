@@ -3,15 +3,16 @@ package com.tss.aml.controller;
 import com.tss.aml.context.TenantContext;
 import com.tss.aml.dto.request.SelectedRuleRegisterDto;
 import com.tss.aml.dto.result.AlertResponseDto;
+import com.tss.aml.dto.result.PaginatedResponseDto;
 import com.tss.aml.dto.result.SelectedRuleResponseDto;
 import com.tss.aml.service.RuleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/rules")
@@ -36,10 +37,14 @@ public class RuleController {
     @GetMapping("/{tenant}")
     @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     @Transactional
-    public ResponseEntity<List<SelectedRuleResponseDto>> getRules(@PathVariable String tenant){
+    public ResponseEntity<PaginatedResponseDto<SelectedRuleResponseDto>> getRules(
+            @PathVariable String tenant,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
         try {
             TenantContext.setTenant("tenant_" + tenant);
-            return ResponseEntity.ok(ruleService.getSelectedRules());
+            Pageable pageable = PageRequest.of(page, size);
+            return ResponseEntity.ok(ruleService.getSelectedRules(pageable));
         } finally {
             TenantContext.clear();
         }
@@ -47,7 +52,10 @@ public class RuleController {
 
     @GetMapping("/alerts")
     @PreAuthorize("hasRole('BANK_ADMIN')")
-    public ResponseEntity<List<AlertResponseDto>> getAlerts(){
-        return ResponseEntity.ok(ruleService.getAlerts());
+    public ResponseEntity<PaginatedResponseDto<AlertResponseDto>> getAlerts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(ruleService.getAlerts(pageable));
     }
 }

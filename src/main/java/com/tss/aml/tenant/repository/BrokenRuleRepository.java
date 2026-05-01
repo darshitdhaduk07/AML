@@ -48,4 +48,8 @@ public interface BrokenRuleRepository extends JpaRepository<BrokenRule, UUID> {
     WHERE br.active = true
 """)
     List<ReportRow> getReportData();
+
+    org.springframework.data.domain.Page<BrokenRule> findByActiveTrue(org.springframework.data.domain.Pageable pageable);
+
+    List<BrokenRule> findByCustomerCustomerNumberAndActiveTrue(String customerNumber);
 }

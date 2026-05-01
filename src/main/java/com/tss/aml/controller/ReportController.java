@@ -8,11 +8,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayInputStream;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -58,6 +60,24 @@ public class ReportController {
                 .header("Content-Disposition", "attachment; filename=case-report.pdf")
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(new InputStreamResource(pdf));
+    }
+
+    @GetMapping("/sar-logs")
+    @PreAuthorize("hasRole('BANK_ADMIN')")
+    public ResponseEntity<List<com.tss.aml.dto.result.CaseResponseDto>> getSarLogs() {
+        return ResponseEntity.ok(reportService.getSarLogs());
+    }
+
+    @GetMapping("/co-performance")
+    @PreAuthorize("hasRole('BANK_ADMIN')")
+    public ResponseEntity<List<Map<String, Object>>> getCoPerformance() {
+        return ResponseEntity.ok(reportService.getCoPerformance());
+    }
+
+    @GetMapping("/batch-summaries")
+    @PreAuthorize("hasRole('BANK_ADMIN')")
+    public ResponseEntity<List<com.tss.aml.tenant.entity.BatchSummary>> getBatchSummaries() {
+        return ResponseEntity.ok(reportService.getBatchSummaries());
     }
 
 }

@@ -2,8 +2,10 @@ package com.tss.aml.service;
 
 import com.tss.aml.dto.request.CaseRequestDto;
 import com.tss.aml.dto.request.ComplianceInvestigationAssignmentDto;
+import com.tss.aml.dto.result.CaseResponseDto;
 import com.tss.aml.dto.result.ComplianceInvestigationAssignmentResponseDto;
 import com.tss.aml.dto.result.CustomerResponseDto;
+import com.tss.aml.dto.result.PaginatedResponseDto;
 import com.tss.aml.enums.CaseStatus;
 import com.tss.aml.enums.NotificationType;
 import com.tss.aml.exception.ResourceNotFoundException;
@@ -13,7 +15,10 @@ import com.tss.aml.tenant.entity.Case;
 import com.tss.aml.tenant.entity.ComplianceInvestigationAssignment;
 import com.tss.aml.tenant.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -32,6 +37,7 @@ public class InvestigationService {
     private final InAppNotificationService inAppNotificationService;
     private final BankAdminRepository bankAdminRepository;
 
+    @Transactional
     public void assignComplianceOfficer(ComplianceInvestigationAssignmentDto request) {
         if (complianceInvestigationAssignmentRepository.existsByCustomerCustomerNumberAndIsOpenTrue(request.getCustomerNumber())) {
             throw new IllegalStateException("Customer investigation is already assigned to someone");
@@ -53,6 +59,11 @@ public class InvestigationService {
         );
 
         complianceInvestigationAssignmentRepository.save(data);
+        
+        // Mark all active alerts for this customer as inactive (assigned)
+        List<BrokenRule> activeRules = brokenRuleRepository.findByCustomerCustomerNumberAndActiveTrue(request.getCustomerNumber());
+        activeRules.forEach(br -> br.setActive(false));
+        brokenRuleRepository.saveAll(activeRules);
 
         // Notify Compliance Officer
         inAppNotificationService.createNotification(
@@ -63,6 +74,7 @@ public class InvestigationService {
         );
     }
 
+    @Transactional
     public void createCase(CaseRequestDto request) {
         Case data = new Case();
         data.setCaseDescription(request.getCaseDescription());
@@ -78,6 +90,7 @@ public class InvestigationService {
         caseRepository.save(data);
     }
 
+    @Transactional
     public void markFalsePositive(UUID brokenRuleId) {
         BrokenRule brokenRule = brokenRuleRepository
                 .findById(brokenRuleId)
@@ -96,8 +109,8 @@ public class InvestigationService {
         brokenRuleRepository.save(brokenRule);
     }
 
-    public List<ComplianceInvestigationAssignmentResponseDto> getAssignments() {
-        List<ComplianceInvestigationAssignment> assignments =
+    public PaginatedResponseDto<ComplianceInvestigationAssignmentResponseDto> getAssignments(Pageable pageable) {
+        Page<ComplianceInvestigationAssignment> assignmentPage =
                 complianceInvestigationAssignmentRepository
                         .findByComplianceOfficerId
                                 (
@@ -106,10 +119,11 @@ public class InvestigationService {
                                                 .orElseThrow(() ->
                                                         new ResourceNotFoundException("Investigation Assignment", appUserService.get().getUsername())
                                                 )
-                                                .getId()
+                                                .getId(),
+                                        pageable
                                 );
 
-        return assignments
+        List<ComplianceInvestigationAssignmentResponseDto> dtos = assignmentPage
                 .stream()
                 .map(I -> {
                             ComplianceInvestigationAssignmentResponseDto dto = new ComplianceInvestigationAssignmentResponseDto();
@@ -121,8 +135,74 @@ public class InvestigationService {
                         }
                 )
                 .toList();
+
+        return PaginatedResponseDto.<ComplianceInvestigationAssignmentResponseDto>builder()
+                .content(dtos)
+                .pageNumber(assignmentPage.getNumber())
+                .pageSize(assignmentPage.getSize())
+                .totalElements(assignmentPage.getTotalElements())
+                .totalPages(assignmentPage.getTotalPages())
+                .last(assignmentPage.isLast())
+                .build();
     }
 
+    public PaginatedResponseDto<CaseResponseDto> getCases(Pageable pageable) {
+        Page<Case> casePage = caseRepository.findAll(pageable);
+        
+        List<CaseResponseDto> dtos = casePage.getContent().stream()
+                .map(c -> {
+                    CaseResponseDto dto = new CaseResponseDto();
+                    dto.setId(c.getId());
+                    dto.setCaseName(c.getCaseName());
+                    dto.setCaseDescription(c.getCaseDescription());
+                    dto.setCaseStatus(c.getCaseStatus());
+                    dto.setCustomerNumber(c.getInvestigatedCustomer().getCustomer().getCustomerNumber());
+                    dto.setSarFiled(c.isSarFiled());
+                    return dto;
+                })
+                .toList();
+
+        return PaginatedResponseDto.<CaseResponseDto>builder()
+                .content(dtos)
+                .pageNumber(casePage.getNumber())
+                .pageSize(casePage.getSize())
+                .totalElements(casePage.getTotalElements())
+                .totalPages(casePage.getTotalPages())
+                .last(casePage.isLast())
+                .build();
+    }
+
+    public PaginatedResponseDto<CaseResponseDto> getEscalatedCases(Pageable pageable) {
+        return getCasesByStatus(CaseStatus.ESCALATED, pageable);
+    }
+
+    public PaginatedResponseDto<CaseResponseDto> getCasesByStatus(CaseStatus status, Pageable pageable) {
+        Page<Case> casePage = caseRepository.findByCaseStatus(status, pageable);
+        
+        List<CaseResponseDto> dtos = casePage.getContent().stream()
+                .map(c -> {
+                    CaseResponseDto dto = new CaseResponseDto();
+                    dto.setId(c.getId());
+                    dto.setCaseName(c.getCaseName());
+                    dto.setCaseDescription(c.getCaseDescription());
+                    dto.setCaseStatus(c.getCaseStatus());
+                    dto.setCustomerNumber(c.getInvestigatedCustomer().getCustomer().getCustomerNumber());
+                    dto.setSarFiled(c.isSarFiled());
+                    return dto;
+                })
+                .toList();
+
+        return PaginatedResponseDto.<CaseResponseDto>builder()
+                .content(dtos)
+                .pageNumber(casePage.getNumber())
+                .pageSize(casePage.getSize())
+                .totalElements(casePage.getTotalElements())
+                .totalPages(casePage.getTotalPages())
+                .last(casePage.isLast())
+                .build();
+    }
+
+    @Transactional
     public void escalateCase(UUID caseId) {
         Case caseData = caseRepository.findById(caseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Case", caseId));
@@ -133,6 +213,7 @@ public class InvestigationService {
         notifyBankAdmin(NotificationType.CASE_ESCALATED, "Case " + caseData.getCaseName() + " has been escalated.");
     }
 
+    @Transactional
     public void fileSAR(UUID caseId) {
         Case caseData = caseRepository.findById(caseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Case", caseId));
