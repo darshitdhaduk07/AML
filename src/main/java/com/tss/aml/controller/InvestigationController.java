@@ -45,4 +45,18 @@ public class InvestigationController {
     public ResponseEntity<List<ComplianceInvestigationAssignmentResponseDto>> getAssignments(){
         return ResponseEntity.ok(investigationService.getAssignments());
     }
+
+    @PutMapping("/cases/{caseId}/escalate")
+    @PreAuthorize("hasRole('COMPLIANCE_OFFICER')")
+    public ResponseEntity<String> escalateCase(@PathVariable UUID caseId){
+        investigationService.escalateCase(caseId);
+        return ResponseEntity.ok("Case Escalated.");
+    }
+
+    @PutMapping("/cases/{caseId}/file-sar")
+    @PreAuthorize("hasRole('COMPLIANCE_OFFICER')")
+    public ResponseEntity<String> fileSar(@PathVariable UUID caseId){
+        investigationService.fileSAR(caseId);
+        return ResponseEntity.ok("SAR/STR Filed.");
+    }
 }

@@ -78,7 +78,6 @@ public class FileUploadController {
     @PreAuthorize("hasRole('BANK_ADMIN')")
     @Transactional
     public ResponseEntity<String> uploadTransactions(@RequestParam("file") MultipartFile file) {
-        log.info("Received request to upload transaction file: {}", file.getOriginalFilename());
         if (file.isEmpty()) {
             log.warn("Upload failed: File is empty");
             return ResponseEntity.badRequest().body("File is empty");

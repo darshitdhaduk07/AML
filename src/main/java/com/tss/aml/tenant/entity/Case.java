@@ -28,4 +28,7 @@ public class Case extends BaseEntity{
     @JoinColumn(name = "investigated_customer", nullable = false)
     ComplianceInvestigationAssignment investigatedCustomer;
 
+    @Column(nullable = false)
+    private boolean isSarFiled = false;
+
 }

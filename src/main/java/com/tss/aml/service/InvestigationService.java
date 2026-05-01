@@ -5,6 +5,7 @@ import com.tss.aml.dto.request.ComplianceInvestigationAssignmentDto;
 import com.tss.aml.dto.result.ComplianceInvestigationAssignmentResponseDto;
 import com.tss.aml.dto.result.CustomerResponseDto;
 import com.tss.aml.enums.CaseStatus;
+import com.tss.aml.enums.NotificationType;
 import com.tss.aml.exception.ResourceNotFoundException;
 import com.tss.aml.mapper.CustomerResponseDtoMapper;
 import com.tss.aml.tenant.entity.BrokenRule;
@@ -28,6 +29,8 @@ public class InvestigationService {
     private final BrokenRuleRepository brokenRuleRepository;
     private final AppUserService appUserService;
     private final CustomerResponseDtoMapper customerResponseDtoMapper;
+    private final InAppNotificationService inAppNotificationService;
+    private final BankAdminRepository bankAdminRepository;
 
     public void assignComplianceOfficer(ComplianceInvestigationAssignmentDto request) {
         if (complianceInvestigationAssignmentRepository.existsByCustomerCustomerNumberAndIsOpenTrue(request.getCustomerNumber())) {
@@ -50,6 +53,14 @@ public class InvestigationService {
         );
 
         complianceInvestigationAssignmentRepository.save(data);
+
+        // Notify Compliance Officer
+        inAppNotificationService.createNotification(
+                data.getComplianceOfficer().getEmail(),
+                com.tss.aml.enums.Role.COMPLIANCE_OFFICER,
+                NotificationType.CASE_ASSIGNED,
+                "A new investigation for customer " + request.getCustomerNumber() + " has been assigned to you."
+        );
     }
 
     public void createCase(CaseRequestDto request) {
@@ -110,5 +121,31 @@ public class InvestigationService {
                         }
                 )
                 .toList();
+    }
+
+    public void escalateCase(UUID caseId) {
+        Case caseData = caseRepository.findById(caseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Case", caseId));
+        caseData.setCaseStatus(CaseStatus.ESCALATED);
+        caseRepository.save(caseData);
+
+        // Notify Bank Admin
+        notifyBankAdmin(NotificationType.CASE_ESCALATED, "Case " + caseData.getCaseName() + " has been escalated.");
+    }
+
+    public void fileSAR(UUID caseId) {
+        Case caseData = caseRepository.findById(caseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Case", caseId));
+        caseData.setSarFiled(true);
+        caseRepository.save(caseData);
+
+        // Notify Bank Admin
+        notifyBankAdmin(NotificationType.SAR_FILED, "SAR/STR has been filed for case " + caseData.getCaseName() + ".");
+    }
+
+    private void notifyBankAdmin(NotificationType type, String message) {
+        bankAdminRepository.findAll().stream().findFirst().ifPresent(admin -> 
+            inAppNotificationService.createNotification(admin.getEmail(), com.tss.aml.enums.Role.BANK_ADMIN, type, message)
+        );
     }
 }
