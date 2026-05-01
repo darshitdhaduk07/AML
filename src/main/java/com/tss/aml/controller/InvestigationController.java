@@ -37,12 +37,24 @@ public class InvestigationController {
     }
 
     @GetMapping("/cases")
-    @PreAuthorize("hasRole('COMPLIANCE_OFFICER')")
+    @PreAuthorize("hasAnyRole('COMPLIANCE_OFFICER', 'BANK_ADMIN')")
     public ResponseEntity<PaginatedResponseDto<CaseResponseDto>> getCases(
+            @RequestParam(required = false) com.tss.aml.enums.CaseStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size){
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(investigationService.getCases(pageable));
+        return ResponseEntity.ok(status != null ? 
+                investigationService.getCasesByStatus(status, pageable) : 
+                investigationService.getCases(pageable));
+    }
+
+    @GetMapping("/escalated-cases")
+    @PreAuthorize("hasRole('BANK_ADMIN')")
+    public ResponseEntity<PaginatedResponseDto<CaseResponseDto>> getEscalatedCases(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size){
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(investigationService.getEscalatedCases(pageable));
     }
 
     @PutMapping("/mark-false-positive/{brokenRuleId}")

@@ -172,6 +172,36 @@ public class InvestigationService {
                 .build();
     }
 
+    public PaginatedResponseDto<CaseResponseDto> getEscalatedCases(Pageable pageable) {
+        return getCasesByStatus(CaseStatus.ESCALATED, pageable);
+    }
+
+    public PaginatedResponseDto<CaseResponseDto> getCasesByStatus(CaseStatus status, Pageable pageable) {
+        Page<Case> casePage = caseRepository.findByCaseStatus(status, pageable);
+        
+        List<CaseResponseDto> dtos = casePage.getContent().stream()
+                .map(c -> {
+                    CaseResponseDto dto = new CaseResponseDto();
+                    dto.setId(c.getId());
+                    dto.setCaseName(c.getCaseName());
+                    dto.setCaseDescription(c.getCaseDescription());
+                    dto.setCaseStatus(c.getCaseStatus());
+                    dto.setCustomerNumber(c.getInvestigatedCustomer().getCustomer().getCustomerNumber());
+                    dto.setSarFiled(c.isSarFiled());
+                    return dto;
+                })
+                .toList();
+
+        return PaginatedResponseDto.<CaseResponseDto>builder()
+                .content(dtos)
+                .pageNumber(casePage.getNumber())
+                .pageSize(casePage.getSize())
+                .totalElements(casePage.getTotalElements())
+                .totalPages(casePage.getTotalPages())
+                .last(casePage.isLast())
+                .build();
+    }
+
     @Transactional
     public void escalateCase(UUID caseId) {
         Case caseData = caseRepository.findById(caseId)
