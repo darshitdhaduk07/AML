@@ -21,7 +21,6 @@ public class TenantRegistrationService {
 
     @Transactional
     public void registerTenant(TenantRegisterRequestDto request) {
-        log.info("Starting registration for tenant: {}", request.getTenantName());
         String schemaName = generateSchemaName(request.getTenantName());
         log.debug("Generated schema name: {}", schemaName);
 

@@ -25,7 +25,6 @@ public class AuthController {
     @PostMapping("/register/tenant")
     @PreAuthorize("hasRole('SYSTEM_ADMIN')")
     public ResponseEntity<String> registerTenant(@RequestBody TenantRegisterRequestDto request) {
-        log.info("Request received to register tenant: {}", request.getTenantName());
         tenantRegistrationService.registerTenant(request);
         log.info("Tenant {} registered successfully", request.getTenantName());
         return ResponseEntity.ok("Tenant Registered Successfully");
@@ -34,7 +33,6 @@ public class AuthController {
     @PostMapping("/register/co")
     @PreAuthorize("hasRole('BANK_ADMIN')")
     public ResponseEntity<String> registerComplianceOfficer(@RequestBody ComplianceOfficerRegisterRequestDto request){
-        log.info("Request received to register compliance officer: {}", request.getEmail());
         complianceOfficerRegistrationService.registerCO(request);
         log.info("Compliance officer {} registered successfully", request.getEmail());
         return ResponseEntity.ok("Compliance Officer Registered Successfully");
