@@ -16,6 +16,11 @@ public class RL_001 implements TransactionRuleTemplate {
     }
 
     @Override
+    public String getSqlCondition(Map<String, Object> parameters) {
+        return "amount > :threshold";
+    }
+
+    @Override
     public Map<String, ParameterMeta> getRequiredParameters() {
         return Map.of(
                 "threshold", new ParameterMeta(Integer.class, true, true)

@@ -7,9 +7,9 @@ import java.util.Map;
 public interface TransactionRuleTemplate extends IRuleTemplate {
     boolean check(Transaction txn, Map<String, Object> parameters);
 
+    String getSqlCondition(Map<String, Object> parameters);
+
     default RuleType getRuleType(){
         return RuleType.TRANSACTION;
     }
-
-
 }

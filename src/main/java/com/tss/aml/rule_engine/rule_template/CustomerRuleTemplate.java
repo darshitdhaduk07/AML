@@ -10,8 +10,9 @@ import java.util.Map;
 public interface CustomerRuleTemplate extends IRuleTemplate {
     List<Transaction> check(Customer customer, Map<String, Object> parameters);
 
+    String getBulkInsertSql();
+
     default RuleType getRuleType(){
         return RuleType.CUSTOMER;
     }
-
 }

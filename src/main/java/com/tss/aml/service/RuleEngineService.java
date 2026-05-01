@@ -38,135 +38,61 @@ public class RuleEngineService {
 
     @Transactional
     public void applyRules() {
-        List<Transaction> unevaluatedTransactions = transactionRepository.findByEvaluatedFalse();
-        List<SelectedRule> selectedRules = selectedRuleRepository.findAll();
-
-        Set<Customer> unevaluatedCustomers = new HashSet<>();
-        List<BrokenRule> pendingBrokenRules = new ArrayList<>();
-
-        for (SelectedRule selectedRule : selectedRules) {
-            IRuleTemplate ruleTemplate = ruleTemplateFactory.getRuleTemplate(selectedRule.getRuleCode());
-
-            if (ruleTemplate.getRuleType().equals(RuleType.TRANSACTION)) {
-                for (Transaction transaction : unevaluatedTransactions) {
-                    boolean result = ((TransactionRuleTemplate) ruleTemplate)
-                            .check(transaction, selectedRule.getParameters());
-
-                    if (result) {
-                        BrokenRule brokenRule = new BrokenRule();
-                        brokenRule.setId(UUID.randomUUID());
-                        brokenRule.setRule(selectedRule);
-                        brokenRule.setCustomer(transaction.getCustomer());
-                        brokenRule.setActive(true);
-                        brokenRule.setGroup_id(UUID.randomUUID());
-                        brokenRule.setTransaction(transaction);
-
-                        pendingBrokenRules.add(brokenRule);
-                    }
-                }
-            }
+        long unevaluatedCount = transactionRepository.countByEvaluatedFalse();
+        if (unevaluatedCount == 0) {
+            log.info("No unevaluated transactions found");
+            return;
         }
 
-        unevaluatedTransactions.forEach(t -> unevaluatedCustomers.add(t.getCustomer()));
+        List<SelectedRule> selectedRules = selectedRuleRepository.findAll();
 
+        // 1. Process CUSTOMER rules first
         for (SelectedRule selectedRule : selectedRules) {
             IRuleTemplate ruleTemplate = ruleTemplateFactory.getRuleTemplate(selectedRule.getRuleCode());
 
             if (ruleTemplate.getRuleType().equals(RuleType.CUSTOMER)) {
-                for (Customer customer : unevaluatedCustomers) {
-                    List<Transaction> result = ((CustomerRuleTemplate) ruleTemplate)
-                            .check(customer, selectedRule.getParameters());
+                String bulkSql = ((CustomerRuleTemplate) ruleTemplate).getBulkInsertSql();
 
-                    if (result != null) {
-                        UUID group_id = UUID.randomUUID();
-                        for (Transaction transaction : result) {
-                            BrokenRule brokenRule = new BrokenRule();
-                            brokenRule.setId(UUID.randomUUID());
-                            brokenRule.setRule(selectedRule);
-                            brokenRule.setCustomer(transaction.getCustomer());
-                            brokenRule.setActive(true);
-                            brokenRule.setGroup_id(group_id);
-                            brokenRule.setTransaction(transaction);
+                if (bulkSql != null) {
+                    Query query = entityManager.createNativeQuery(bulkSql);
+                    query.setParameter("ruleId", selectedRule.getId());
 
-                            pendingBrokenRules.add(brokenRule);
-                        }
+                    if (selectedRule.getParameters() != null) {
+                        selectedRule.getParameters().forEach(query::setParameter);
                     }
+
+                    int rowsAffected = query.executeUpdate();
+                    log.info("Customer Rule {} applied (bulk): {} violations found", selectedRule.getRuleCode(), rowsAffected);
                 }
             }
         }
 
-        if (!pendingBrokenRules.isEmpty()) {
-            bulkInsertBrokenRules(pendingBrokenRules);
-        }
+        // 2. Process TRANSACTION rules next
+        for (SelectedRule selectedRule : selectedRules) {
+            IRuleTemplate ruleTemplate = ruleTemplateFactory.getRuleTemplate(selectedRule.getRuleCode());
 
-        if (!unevaluatedTransactions.isEmpty()) {
-            bulkUpdateTransactionsAsEvaluated(unevaluatedTransactions);
-        }
-        log.info("Rule application process completed");
-    }
+            if (ruleTemplate.getRuleType().equals(RuleType.TRANSACTION)) {
+                String condition = ((TransactionRuleTemplate) ruleTemplate).getSqlCondition(selectedRule.getParameters());
 
-    private void bulkInsertBrokenRules(List<BrokenRule> brokenRules) {
-        int batchSize = 500;
+                String sql = "INSERT INTO broken_rules (id, selected_rule_id, customer_number, transaction_id, active, group_id, created_at, updated_at, false_positive) " +
+                             "SELECT gen_random_uuid(), :ruleId, t.customer_number, t.id, true, gen_random_uuid(), NOW(), NOW(), false " +
+                             "FROM transactions t " +
+                             "WHERE t.evaluated = false AND " + condition;
 
-        for (int i = 0; i < brokenRules.size(); i += batchSize) {
-            List<BrokenRule> batch = brokenRules.subList(i, Math.min(i + batchSize, brokenRules.size()));
+                Query query = entityManager.createNativeQuery(sql);
+                query.setParameter("ruleId", selectedRule.getId());
 
-            StringBuilder sql = new StringBuilder("""
-                    INSERT INTO broken_rules (
-                        id, selected_rule_id, customer_number, transaction_id, active, group_id, created_at, updated_at
-                    ) VALUES
-                    """);
-
-            List<Object> params = new ArrayList<>();
-
-            for (int j = 0; j < batch.size(); j++) {
-                BrokenRule br = batch.get(j);
-                sql.append("(?, ?, ?, ?, ?, ?, NOW(), NOW())");
-
-                if (j < batch.size() - 1) {
-                    sql.append(", ");
+                if (selectedRule.getParameters() != null) {
+                    selectedRule.getParameters().forEach(query::setParameter);
                 }
 
-                params.add(br.getId());
-                params.add(br.getRule().getId());
-                params.add(br.getCustomer().getCustomerNumber());
-                params.add(br.getTransaction().getId());
-                params.add(br.getActive());
-                params.add(br.getGroup_id());
+                int rowsAffected = query.executeUpdate();
+                log.info("Transaction Rule {} applied: {} violations found", selectedRule.getRuleCode(), rowsAffected);
             }
-
-            Query query = entityManager.createNativeQuery(sql.toString());
-            for (int k = 0; k < params.size(); k++) {
-                query.setParameter(k + 1, params.get(k));
-            }
-            query.executeUpdate();
-
-            entityManager.flush();
-            entityManager.clear();
         }
+
+        // 3. Mark all processed transactions as evaluated
+        int updatedCount = transactionRepository.markAllAsEvaluated();
+        log.info("Rule application process completed. {} transactions marked as evaluated", updatedCount);
     }
-
-    private void bulkUpdateTransactionsAsEvaluated(List<Transaction> transactions) {
-        int batchSize = 500;
-
-        for (int i = 0; i < transactions.size(); i += batchSize) {
-            List<Transaction> batch = transactions.subList(i, Math.min(i + batchSize, transactions.size()));
-
-            List<UUID> transactionId = batch.stream()
-                    .map(Transaction::getId)
-                    .toList();
-
-            String inClauseMarkers = transactionId.stream()
-                    .map(t -> "?")
-                    .collect(Collectors.joining(","));
-
-            String sql = "UPDATE transactions SET evaluated = true, updated_at = NOW() WHERE id IN (" + inClauseMarkers + ")";
-
-            Query query = entityManager.createNativeQuery(sql);
-            for (int j = 0; j < transactionId.size(); j++) {
-                query.setParameter(j + 1, transactionId.get(j));
-            }
-            query.executeUpdate();
-        }
-    }
-}
+}
