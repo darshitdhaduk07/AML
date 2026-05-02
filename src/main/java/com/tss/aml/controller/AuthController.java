@@ -3,16 +3,15 @@ package com.tss.aml.controller;
 import com.tss.aml.dto.request.ComplianceOfficerRegisterRequestDto;
 import com.tss.aml.dto.request.TenantRegisterRequestDto;
 import com.tss.aml.dto.request.VerifyRequest;
-import com.tss.aml.service.AppUserService;
-import com.tss.aml.service.BlacklistService;
-import com.tss.aml.service.ComplianceOfficerRegistrationService;
-import com.tss.aml.service.JwtService;
-import com.tss.aml.service.TenantRegistrationService;
+import com.tss.aml.enums.NotificationType;
+import com.tss.aml.service.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -25,6 +24,8 @@ public class AuthController {
     private final JwtService jwtService;
     private final BlacklistService blacklistService;
     private final AppUserService appUserService;
+    private final EmailNotificationService notificationService;
+    private final PasswordGenerator passwordGenerator;
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestHeader("Authorization") String authHeader) {
@@ -53,7 +54,17 @@ public class AuthController {
     @PostMapping("/register/co")
     @PreAuthorize("hasRole('BANK_ADMIN')")
     public ResponseEntity<String> registerComplianceOfficer(@RequestBody ComplianceOfficerRegisterRequestDto request){
-        complianceOfficerRegistrationService.registerCO(request);
+        String password = passwordGenerator.generateStrong();
+        complianceOfficerRegistrationService.registerCO(request, password);
+        notificationService.sendNotification(
+                request.getEmail(),
+                NotificationType.CO_REGISTERED,
+                Map.of(
+                        "email", request.getEmail(),
+                        "password", password,
+                        "role", "Compliance Officer"
+                )
+        );
         log.info("Compliance officer {} registered successfully", request.getEmail());
         return ResponseEntity.ok("Compliance Officer Registered Successfully");
     }

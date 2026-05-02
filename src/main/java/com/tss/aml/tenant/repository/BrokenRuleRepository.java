@@ -13,7 +13,7 @@ import java.util.UUID;
 
 public interface BrokenRuleRepository extends JpaRepository<BrokenRule, UUID> {
     @Query("""
-    SELECT new ReportRow(
+    SELECT new com.tss.aml.reports.ReportRow(
         t.transactionNumber,
         c.customerNumber,
         r.ruleCode,
@@ -34,7 +34,7 @@ public interface BrokenRuleRepository extends JpaRepository<BrokenRule, UUID> {
     );
 
     @Query("""
-    SELECT new ReportRow(
+    SELECT new com.tss.aml.reports.ReportRow(
         t.transactionNumber,
         c.customerNumber,
         r.ruleCode,

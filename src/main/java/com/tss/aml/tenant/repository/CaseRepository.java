@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public interface CaseRepository extends JpaRepository<Case, UUID> {
     @Query("""
-    SELECT new CaseReportRow(
+    SELECT new com.tss.aml.reports.CaseReportRow(
         c.customerNumber,
         CONCAT(c.firstName, ' ', c.lastName),
         t.transactionNumber,

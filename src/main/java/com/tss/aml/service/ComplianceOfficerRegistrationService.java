@@ -21,7 +21,7 @@ public class ComplianceOfficerRegistrationService {
     private final NotificationService notificationService;
 
     @Transactional
-    public void registerCO(ComplianceOfficerRegisterRequestDto request) {
+    public void registerCO(ComplianceOfficerRegisterRequestDto request, String password) {
 
         String email = request.getEmail();
 
@@ -29,24 +29,12 @@ public class ComplianceOfficerRegistrationService {
 
         ComplianceOfficer complianceOfficer = new ComplianceOfficer();
 
-        String password = passwordGenerator.generateStrong();
-
         complianceOfficer.setEmail(email);
         complianceOfficer.setPassword(password);
 
         repo.save(complianceOfficer);
 
         log.info("ComplianceOfficer saved successfully | email={}", email);
-
-        notificationService.sendNotification(
-                email,
-                NotificationType.CO_REGISTERED,
-                Map.of(
-                        "email", email,
-                        "password", password,
-                        "role", "Compliance Officer"
-                )
-        );
 
     }
 }
