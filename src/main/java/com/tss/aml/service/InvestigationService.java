@@ -8,11 +8,13 @@ import com.tss.aml.dto.result.CustomerResponseDto;
 import com.tss.aml.dto.result.PaginatedResponseDto;
 import com.tss.aml.enums.CaseStatus;
 import com.tss.aml.enums.NotificationType;
+import com.tss.aml.exception.ClosedCaseException;
 import com.tss.aml.exception.ResourceNotFoundException;
 import com.tss.aml.mapper.CustomerResponseDtoMapper;
 import com.tss.aml.tenant.entity.BrokenRule;
 import com.tss.aml.tenant.entity.Case;
 import com.tss.aml.tenant.entity.ComplianceInvestigationAssignment;
+import com.tss.aml.tenant.entity.Customer;
 import com.tss.aml.tenant.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -61,9 +63,9 @@ public class InvestigationService {
         complianceInvestigationAssignmentRepository.save(data);
         
         // Mark all active alerts for this customer as inactive (assigned)
-        List<BrokenRule> activeRules = brokenRuleRepository.findByCustomerCustomerNumberAndActiveTrue(request.getCustomerNumber());
-        activeRules.forEach(br -> br.setActive(false));
-        brokenRuleRepository.saveAll(activeRules);
+//        List<BrokenRule> activeRules = brokenRuleRepository.findByCustomerCustomerNumberAndActiveTrue(request.getCustomerNumber());
+//        activeRules.forEach(br -> br.setActive(false));
+//        brokenRuleRepository.saveAll(activeRules);
 
         // Notify Compliance Officer
         inAppNotificationService.createNotification(
@@ -130,6 +132,13 @@ public class InvestigationService {
                             dto.setCustomerResponseDto(customerResponseDtoMapper.mapCustomer(I.getCustomer()));
                             dto.setRiskScore(I.getRiskScore());
                             dto.setIsOpen(I.getIsOpen());
+                            dto.setAlerts(
+                                brokenRuleRepository
+                                    .findByCustomerCustomerNumberAndActiveTrue(I.getCustomer().getCustomerNumber())
+                                    .stream()
+                                    .map(customerResponseDtoMapper::mapAlert)
+                                    .toList()
+                            );
 
                             return dto;
                         }
@@ -172,6 +181,10 @@ public class InvestigationService {
                 .build();
     }
 
+    public boolean hasOpenCase(String customerNumber) {
+        return caseRepository.existsByInvestigatedCustomerCustomerAndInvestigatedCustomerIsOpenTrue(customerNumber);
+    }
+
     public PaginatedResponseDto<CaseResponseDto> getEscalatedCases(Pageable pageable) {
         return getCasesByStatus(CaseStatus.ESCALATED, pageable);
     }
@@ -206,6 +219,11 @@ public class InvestigationService {
     public void escalateCase(UUID caseId) {
         Case caseData = caseRepository.findById(caseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Case", caseId));
+        
+        if (caseData.getCaseStatus() == CaseStatus.CLOSED) {
+            throw new ClosedCaseException();
+        }
+        
         caseData.setCaseStatus(CaseStatus.ESCALATED);
         caseRepository.save(caseData);
 
@@ -217,11 +235,29 @@ public class InvestigationService {
     public void fileSAR(UUID caseId) {
         Case caseData = caseRepository.findById(caseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Case", caseId));
+        
+        if (caseData.getCaseStatus() == CaseStatus.CLOSED) {
+            throw new ClosedCaseException();
+        }
+        
         caseData.setSarFiled(true);
         caseRepository.save(caseData);
 
         // Notify Bank Admin
         notifyBankAdmin(NotificationType.SAR_FILED, "SAR/STR has been filed for case " + caseData.getCaseName() + ".");
+    }
+
+    @Transactional
+    public void closeCase(UUID caseId) {
+        Case caseData = caseRepository.findById(caseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Case", caseId));
+        
+        if (caseData.getCaseStatus() != CaseStatus.OPEN) {
+            throw new IllegalStateException("Case can only be closed if it is in OPEN status");
+        }
+        
+        caseData.setCaseStatus(CaseStatus.CLOSED);
+        caseRepository.save(caseData);
     }
 
     private void notifyBankAdmin(NotificationType type, String message) {

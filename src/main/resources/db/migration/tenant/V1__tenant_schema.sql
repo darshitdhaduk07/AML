@@ -99,6 +99,19 @@ create table customers (
                            primary key (id)
 );
 
+CREATE TABLE batch_summaries (
+                                 id uuid PRIMARY KEY,
+
+                                 file_name varchar(255) NOT NULL,
+                                 file_type varchar(255) NOT NULL,
+                                 record_count BIGINT NOT NULL,
+                                 status VARCHAR(255) NOT NULL,
+                                 error_message VARCHAR(1000),
+
+                                 created_at timestamp(6),
+                                 updated_at timestamp(6)
+);
+
 create table selected_rules (
                                 id uuid not null,
                                 created_at timestamp(6) not null,

@@ -48,6 +48,12 @@ public class InvestigationController {
                 investigationService.getCases(pageable));
     }
 
+    @GetMapping("/cases/open")
+    @PreAuthorize("hasAnyRole('COMPLIANCE_OFFICER', 'BANK_ADMIN')")
+    public ResponseEntity<Boolean> hasOpenCase(@RequestParam String customerNumber) {
+        return ResponseEntity.ok(investigationService.hasOpenCase(customerNumber));
+    }
+
     @GetMapping("/escalated-cases")
     @PreAuthorize("hasRole('BANK_ADMIN')")
     public ResponseEntity<PaginatedResponseDto<CaseResponseDto>> getEscalatedCases(
@@ -78,6 +84,13 @@ public class InvestigationController {
     public ResponseEntity<String> escalateCase(@PathVariable UUID caseId){
         investigationService.escalateCase(caseId);
         return ResponseEntity.ok("Case Escalated.");
+    }
+
+    @PutMapping("/cases/{caseId}/close")
+    @PreAuthorize("hasRole('COMPLIANCE_OFFICER')")
+    public ResponseEntity<String> closeCase(@PathVariable UUID caseId){
+        investigationService.closeCase(caseId);
+        return ResponseEntity.ok("Case Closed.");
     }
 
     @PutMapping("/cases/{caseId}/file-sar")

@@ -58,4 +58,16 @@ public class RuleController {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(ruleService.getAlerts(pageable));
     }
+
+    @GetMapping("/alerts/all")
+    @PreAuthorize("hasRole('BANK_ADMIN')")
+    public ResponseEntity<java.util.List<AlertResponseDto>> getAllAlertsSorted(){
+        return ResponseEntity.ok(ruleService.getAllAlertsSorted());
+    }
+
+    @GetMapping("/alerts/customer/{customerNumber}")
+    @PreAuthorize("hasAnyRole('BANK_ADMIN', 'COMPLIANCE_OFFICER')")
+    public ResponseEntity<java.util.List<AlertResponseDto>> getActiveAlertsForCustomer(@PathVariable String customerNumber){
+        return ResponseEntity.ok(ruleService.getActiveAlertsForCustomer(customerNumber));
+    }
 }

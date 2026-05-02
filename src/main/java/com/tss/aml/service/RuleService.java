@@ -76,7 +76,7 @@ public class RuleService {
     }
 
     public PaginatedResponseDto<AlertResponseDto> getAlerts(Pageable pageable) {
-        Page<BrokenRule> brokenRulePage = brokenRuleRepository.findByActiveTrue(pageable);
+        Page<BrokenRule> brokenRulePage = brokenRuleRepository.findAlertsWithoutOpenInvestigation(pageable);
         
         List<AlertResponseDto> dtos = brokenRulePage.getContent().stream()
                 .map(br -> {
@@ -102,5 +102,32 @@ public class RuleService {
                 .totalPages(brokenRulePage.getTotalPages())
                 .last(brokenRulePage.isLast())
                 .build();
+    }
+
+    public List<AlertResponseDto> getAllAlertsSorted() {
+        List<BrokenRule> brokenRules = brokenRuleRepository.findAllByOrderByTransactionTxnTimeDesc();
+        
+        return brokenRules.stream()
+                .map(br -> {
+                    AlertResponseDto dto = new AlertResponseDto();
+                    dto.setActive(br.getActive());
+                    dto.setGroup_id(br.getGroup_id());
+                    dto.setRuleDescription(br.getRule().getDescription());
+                    dto.setCustomer_number(br.getCustomer().getCustomerNumber());
+                    dto.setTransaction(customerResponseDtoMapper.mapTransaction(br.getTransaction()));
+                    dto.setRuleType(ruleTemplateFactory.getRuleTemplate(br.getRule().getRuleCode()).getRuleType());
+                    dto.setWeight(br.getRule().getWeight());
+                    dto.setRuleCode(br.getRule().getRuleCode());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<AlertResponseDto> getActiveAlertsForCustomer(String customerNumber) {
+        List<BrokenRule> brokenRules = brokenRuleRepository.findByCustomerCustomerNumberAndActiveTrue(customerNumber);
+        
+        return brokenRules.stream()
+                .map(customerResponseDtoMapper::mapAlert)
+                .collect(Collectors.toList());
     }
 }

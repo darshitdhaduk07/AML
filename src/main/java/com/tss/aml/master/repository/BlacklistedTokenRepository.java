@@ -14,5 +14,25 @@ public interface BlacklistedTokenRepository extends JpaRepository<BlacklistedTok
             nativeQuery = true
     )
     boolean existsByJti(@Param("jti") UUID jti);
-    void deleteAllByExpiresAtBefore(LocalDateTime threshold);
+    @org.springframework.data.jpa.repository.Modifying
+    @Query(
+            value = "INSERT INTO master.blacklisted_tokens (id, jti, user_id, tenant_id, blacklisted_at, expires_at) " +
+                    "VALUES (:id, :jti, :userId, :tenantId, :blacklistedAt, :expiresAt)",
+            nativeQuery = true
+    )
+    void saveToMaster(
+            @Param("id") UUID id,
+            @Param("jti") UUID jti,
+            @Param("userId") UUID userId,
+            @Param("tenantId") String tenantId,
+            @Param("blacklistedAt") LocalDateTime blacklistedAt,
+            @Param("expiresAt") LocalDateTime expiresAt
+    );
+
+    @org.springframework.data.jpa.repository.Modifying
+    @Query(
+            value = "DELETE FROM master.blacklisted_tokens WHERE expires_at < :threshold",
+            nativeQuery = true
+    )
+    void deleteAllByExpiresAtBefore(@Param("threshold") LocalDateTime threshold);
 }

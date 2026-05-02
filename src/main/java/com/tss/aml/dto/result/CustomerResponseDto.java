@@ -4,7 +4,6 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 
 @Data
 public class CustomerResponseDto {
@@ -19,5 +18,4 @@ public class CustomerResponseDto {
     private String countryOfBirth;
     private BigDecimal income;
     private BigDecimal netWorth;
-    private List<AlertResponseDto> alerts;
 }

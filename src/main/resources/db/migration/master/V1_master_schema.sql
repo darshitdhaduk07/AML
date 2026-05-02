@@ -16,17 +16,8 @@ create table master.blacklisted_tokens (
                                            expires_at timestamp(6) not null,
                                            jti uuid not null,
                                            tenant_id varchar(255),
-                                           user_id uuid not null,
+                                           user_id uuid,
                                            primary key (id)
-);
-
-create table master.rule_templates (
-                                       id uuid not null,
-                                       created_at timestamp(6) not null,
-                                       updated_at timestamp(6),
-                                       description TEXT not null,
-                                       parameters jsonb not null,
-                                       primary key (id)
 );
 
 create table master.tenants (

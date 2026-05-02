@@ -20,17 +20,16 @@ public class BlacklistService {
 
     @Transactional
     public void blacklist(Claims claims, UUID userId) {
-        BlacklistedToken token = new BlacklistedToken();
-        token.setJti(UUID.fromString(claims.getId()));
-        token.setUserId(userId);
-        token.setTenantId(claims.get("tenantId", String.class)); // null for SYSTEM_ADMIN
-        token.setBlacklistedAt(LocalDateTime.now());
-        token.setExpiresAt(
+        repository.saveToMaster(
+                UUID.randomUUID(),
+                UUID.fromString(claims.getId()),
+                userId,
+                claims.get("tenantId", String.class),
+                LocalDateTime.now(),
                 claims.getExpiration().toInstant()
                         .atZone(ZoneId.systemDefault())
                         .toLocalDateTime()
         );
-        repository.save(token);
     }
 
     public boolean isBlacklisted(UUID jti) {

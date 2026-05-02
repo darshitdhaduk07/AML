@@ -32,15 +32,6 @@ public class CustomerResponseDtoMapper {
         dto.setIncome(customer.getIncome());
         dto.setNetWorth(customer.getNetWorth());
 
-        if (customer.getAlerts() != null) {
-            List<AlertResponseDto> alerts = customer.getAlerts()
-                    .stream()
-                    .map(this::mapAlert)
-                    .toList();
-
-            dto.setAlerts(alerts);
-        }
-
         return dto;
     }
     public TransactionResponseDto mapTransaction(Transaction t) {
@@ -62,6 +53,7 @@ public class CustomerResponseDtoMapper {
 
     public AlertResponseDto mapAlert(BrokenRule br) {
         AlertResponseDto dto = new AlertResponseDto();
+        dto.setId(br.getId());
         dto.setActive(br.getActive());
         dto.setGroup_id(br.getGroup_id());
         dto.setRuleDescription(br.getRule().getDescription());
@@ -70,6 +62,7 @@ public class CustomerResponseDtoMapper {
         dto.setRuleType(ruleTemplateFactory.getRuleTemplate(br.getRule().getRuleCode()).getRuleType());
         dto.setWeight(br.getRule().getWeight());
         dto.setRuleCode(br.getRule().getRuleCode());
+        dto.setFalsePositive(br.getFalsePositive());
         return dto;
     }
 }

@@ -49,7 +49,19 @@ public interface BrokenRuleRepository extends JpaRepository<BrokenRule, UUID> {
 """)
     List<ReportRow> getReportData();
 
+    @Query("""
+        SELECT br FROM BrokenRule br 
+        WHERE br.active = true 
+        AND NOT EXISTS (
+            SELECT 1 FROM ComplianceInvestigationAssignment cia 
+            WHERE cia.customer = br.customer AND cia.isOpen = true
+        )
+    """)
+    org.springframework.data.domain.Page<BrokenRule> findAlertsWithoutOpenInvestigation(org.springframework.data.domain.Pageable pageable);
+
     org.springframework.data.domain.Page<BrokenRule> findByActiveTrue(org.springframework.data.domain.Pageable pageable);
 
     List<BrokenRule> findByCustomerCustomerNumberAndActiveTrue(String customerNumber);
+
+    List<BrokenRule> findAllByOrderByTransactionTxnTimeDesc();
 }

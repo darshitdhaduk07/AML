@@ -135,7 +135,7 @@ public class DataIngestionService {
 //    @Async
     @Transactional
     public void ingestCustomersFromFile(MultipartFile file) throws IOException {
-        checkAndCreateTable();
+//        checkAndCreateTable();
         log.info("Starting customer ingestion from file: {}", file.getOriginalFilename());
         
         com.tss.aml.tenant.entity.BatchSummary summary = new com.tss.aml.tenant.entity.BatchSummary();

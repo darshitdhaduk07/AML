@@ -18,7 +18,7 @@ public class BlacklistedToken {
     @Column(nullable = false, unique = true)
     private UUID jti;
 
-    @Column(nullable = false)
+    @Column
     private UUID userId;
 
     private String tenantId;
