@@ -4,7 +4,6 @@ import com.tss.aml.dto.request.CaseRequestDto;
 import com.tss.aml.dto.request.ComplianceInvestigationAssignmentDto;
 import com.tss.aml.dto.result.CaseResponseDto;
 import com.tss.aml.dto.result.ComplianceInvestigationAssignmentResponseDto;
-import com.tss.aml.dto.result.CustomerResponseDto;
 import com.tss.aml.dto.result.PaginatedResponseDto;
 import com.tss.aml.enums.CaseStatus;
 import com.tss.aml.enums.NotificationType;
@@ -14,7 +13,6 @@ import com.tss.aml.mapper.CustomerResponseDtoMapper;
 import com.tss.aml.tenant.entity.BrokenRule;
 import com.tss.aml.tenant.entity.Case;
 import com.tss.aml.tenant.entity.ComplianceInvestigationAssignment;
-import com.tss.aml.tenant.entity.Customer;
 import com.tss.aml.tenant.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -61,11 +59,6 @@ public class InvestigationService {
         );
 
         complianceInvestigationAssignmentRepository.save(data);
-        
-        // Mark all active alerts for this customer as inactive (assigned)
-//        List<BrokenRule> activeRules = brokenRuleRepository.findByCustomerCustomerNumberAndActiveTrue(request.getCustomerNumber());
-//        activeRules.forEach(br -> br.setActive(false));
-//        brokenRuleRepository.saveAll(activeRules);
 
         // Notify Compliance Officer
         inAppNotificationService.createNotification(
@@ -100,11 +93,10 @@ public class InvestigationService {
                         new ResourceNotFoundException("Broken Rule", brokenRuleId)
                 );
 
-        ComplianceInvestigationAssignment assignment = complianceInvestigationAssignmentRepository
-                .findByCustomerCustomerNumberAndIsOpenTrue(brokenRule.getCustomer().getCustomerNumber())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Customer Investigation", brokenRule.getCustomer().getCustomerNumber())
-                );
+        if(!complianceInvestigationAssignmentRepository
+                .existsByCustomerCustomerNumberAndIsOpenTrue(brokenRule.getCustomer().getCustomerNumber()))
+            throw new ResourceNotFoundException("Customer Investigation", brokenRule.getCustomer().getCustomerNumber());
+
 
         brokenRule.setFalsePositive(true);
 
@@ -241,6 +233,7 @@ public class InvestigationService {
         }
         
         caseData.setSarFiled(true);
+        caseData.setCaseStatus(CaseStatus.CLOSED);
         caseRepository.save(caseData);
 
         // Notify Bank Admin

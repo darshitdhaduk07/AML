@@ -1,7 +1,6 @@
 package com.tss.aml.service;
 
 import com.tss.aml.enums.NotificationType;
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,19 +21,6 @@ public class EmailNotificationService implements NotificationService {
     private final JavaMailSender mailSender;
 
     private final TemplateEngine templateEngine;
-
-//    @Override
-//    public void sendNotification(String to, String subject, String htmlContent) throws Exception {
-//        MimeMessage message = mailSender.createMimeMessage();
-//        MimeMessageHelper helper = new MimeMessageHelper(message, true);
-//
-//        helper.setTo(to);
-//        helper.setSubject(subject);
-//        helper.setText(htmlContent, true);
-//
-//        mailSender.send(message);
-//    }
-
 
     @Async
     @Override

@@ -1,7 +1,6 @@
 package com.tss.aml.master.entity;
 
 import com.tss.aml.tenant.entity.BaseEntity;
-import com.tss.aml.tenant.entity.SelectedRule;
 import jakarta.persistence.Column;
 
 import jakarta.persistence.*;

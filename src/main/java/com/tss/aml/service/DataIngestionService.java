@@ -1,12 +1,11 @@
 package com.tss.aml.service;
 
-import com.tss.aml.context.TenantContext;
 import com.tss.aml.dto.result.ParseAccount;
 import com.tss.aml.dto.result.ParseTransaction;
 import com.tss.aml.dto.result.TransactionParseResult;
 import com.tss.aml.exception.BulkValidationException;
 import com.tss.aml.exception.ValidationException;
-import com.tss.aml.tenant.entity.Account;
+import com.tss.aml.tenant.entity.BatchSummary;
 import com.tss.aml.tenant.entity.Customer;
 import com.tss.aml.tenant.repository.CustomerRepository;
 import jakarta.persistence.EntityManager;
@@ -14,7 +13,6 @@ import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -35,30 +33,8 @@ public class DataIngestionService {
     private final EntityManager entityManager;
     private final CustomerCsvParser csvParser;
     private final TransactionCsvParser transactionParser;
-    private final RuleEngineService ruleEngineService;
-    private final AppUserService appUserService;
     private final CustomerRepository customerRepository;
     private final com.tss.aml.tenant.repository.BatchSummaryRepository batchSummaryRepository;
-
-    private void checkAndCreateTable() {
-        try {
-            entityManager.createNativeQuery("""
-                CREATE TABLE IF NOT EXISTS batch_summaries (
-                    id UUID PRIMARY KEY,
-                    created_at TIMESTAMP NOT NULL,
-                    updated_at TIMESTAMP,
-                    file_name VARCHAR(255) NOT NULL,
-                    file_type VARCHAR(255) NOT NULL,
-                    record_count BIGINT NOT NULL,
-                    status VARCHAR(255) NOT NULL,
-                    error_message VARCHAR(1000)
-                )
-            """).executeUpdate();
-            log.info("Verified batch_summaries table existence");
-        } catch (Exception e) {
-            log.warn("Failed to verify/create batch_summaries table: {}", e.getMessage());
-        }
-    }
 
     private void bulkCustomerUpsert(List<Customer> customers) {
         int batchSize = 500;
@@ -135,10 +111,9 @@ public class DataIngestionService {
 //    @Async
     @Transactional
     public void ingestCustomersFromFile(MultipartFile file) throws IOException {
-//        checkAndCreateTable();
         log.info("Starting customer ingestion from file: {}", file.getOriginalFilename());
         
-        com.tss.aml.tenant.entity.BatchSummary summary = new com.tss.aml.tenant.entity.BatchSummary();
+        com.tss.aml.tenant.entity.BatchSummary summary = new BatchSummary();
         summary.setFileName(file.getOriginalFilename());
         summary.setFileType("CUSTOMER");
         
@@ -257,7 +232,7 @@ public class DataIngestionService {
             ifsc             = EXCLUDED.ifsc,
             customer_number  = EXCLUDED.customer_number,
             updated_at       = NOW()
-    """);
+       """);
 
         Query query = entityManager.createNativeQuery(sql.toString());
 
@@ -306,13 +281,11 @@ public class DataIngestionService {
     }
 
 //    @Async
-//    @Async
     @Transactional
     public void ingestTransactionsFromFile(MultipartFile file) throws IOException {
-        checkAndCreateTable();
         log.info("Starting transaction ingestion from file: {}", file.getOriginalFilename());
         
-        com.tss.aml.tenant.entity.BatchSummary summary = new com.tss.aml.tenant.entity.BatchSummary();
+        BatchSummary summary = new com.tss.aml.tenant.entity.BatchSummary();
         summary.setFileName(file.getOriginalFilename());
         summary.setFileType("TRANSACTION");
         

@@ -2,7 +2,6 @@ package com.tss.aml.service;
 
 
 import com.tss.aml.enums.NotificationType;
-import jakarta.mail.MessagingException;
 
 import java.util.Map;
 

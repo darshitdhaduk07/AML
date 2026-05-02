@@ -1,6 +1,5 @@
 package com.tss.aml.service;
 
-import com.tss.aml.master.entity.BlacklistedToken;
 import com.tss.aml.master.repository.BlacklistedTokenRepository;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +23,7 @@ public class BlacklistService {
                 UUID.randomUUID(),
                 UUID.fromString(claims.getId()),
                 userId,
-                claims.get("tenantId", String.class),
+                claims.get("tenant", String.class),
                 LocalDateTime.now(),
                 claims.getExpiration().toInstant()
                         .atZone(ZoneId.systemDefault())

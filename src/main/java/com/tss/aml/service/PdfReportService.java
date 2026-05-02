@@ -1,6 +1,5 @@
 package com.tss.aml.service;
 
-import com.lowagie.text.pdf.draw.LineSeparator;
 import com.tss.aml.reports.CaseReportRow;
 import com.tss.aml.reports.ReportRow;
 import com.tss.aml.tenant.entity.Case;

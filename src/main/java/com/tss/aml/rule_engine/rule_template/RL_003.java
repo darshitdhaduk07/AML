@@ -1,11 +1,8 @@
 package com.tss.aml.rule_engine.rule_template;
 
 import com.tss.aml.model.ParameterMeta;
-import com.tss.aml.tenant.entity.Customer;
-import com.tss.aml.tenant.entity.Transaction;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -32,12 +29,6 @@ public class RL_003 implements CustomerRuleTemplate {
                 JOIN account_summary as_table ON t.account_number = as_table.account_number
                 WHERE t.txn_time > NOW() - (CAST(:duration AS text) || ' hours')::interval
                 """;
-    }
-
-    @Override
-    public List<Transaction> check(Customer customer, Map<String, Object> parameters) {
-        // Legacy method, not used in the optimized RuleEngineService
-        return null;
     }
 
     @Override

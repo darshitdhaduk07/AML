@@ -1,6 +1,5 @@
 package com.tss.aml.dto.request;
 
-import com.tss.aml.tenant.entity.ComplianceInvestigationAssignment;
 import lombok.Data;
 
 @Data

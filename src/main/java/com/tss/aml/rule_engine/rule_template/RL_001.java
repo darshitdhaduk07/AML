@@ -10,13 +10,7 @@ import java.util.Map;
 @Service
 public class RL_001 implements TransactionRuleTemplate {
     @Override
-    public boolean check(Transaction txn, Map<String, Object> parameters) {
-        int threshold = Integer.parseInt(parameters.get("threshold").toString());
-        return txn.getAmount().compareTo(new BigDecimal(threshold)) > 0;
-    }
-
-    @Override
-    public String getSqlCondition(Map<String, Object> parameters) {
+    public String getSqlCondition() {
         return "amount > :threshold";
     }
 

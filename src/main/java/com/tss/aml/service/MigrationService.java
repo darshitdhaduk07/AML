@@ -5,7 +5,6 @@ import com.tss.aml.enums.TenantStatus;
 import com.tss.aml.exception.MigrationException;
 import com.tss.aml.master.entity.Tenant;
 import com.tss.aml.master.repository.TenantRepository;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
@@ -21,20 +20,8 @@ import static com.tss.aml.constant.GlobalConstants.DB_NAME;
 public class MigrationService {
 
     private final TenantRepository tenantRepository;
-    //    private final JdbcTemplate jdbcTemplate;
 
     private final DataSource dataSource;
-    private final EntityManager entityManager;
-
-//    public void createSchema(String schemaName){
-//        try {
-//            System.out.println("Hii");
-//            jdbcTemplate.execute("CREATE SCHEMA " + schemaName);
-//
-//        } catch (Exception ex) {
-//            throw new RuntimeException("Tenant registration failed: " + ex.getMessage());
-//        }
-//    }
 
     public void runFlyWay(String schemaName) {
         try {
@@ -43,7 +30,6 @@ public class MigrationService {
                     .schemas(schemaName)
                     .locations("classpath:db/migration/tenant")
                     .baselineOnMigrate(true)
-//                    .ignoreMigrationPatterns("*:*")
                     .failOnMissingLocations(false)
                     .load();
 

@@ -1,9 +1,11 @@
 package com.tss.aml.controller;
 
 import com.tss.aml.dto.request.CaseReportData;
+import com.tss.aml.dto.result.CaseResponseDto;
 import com.tss.aml.reports.ReportRow;
 import com.tss.aml.service.PdfReportService;
 import com.tss.aml.service.ReportService;
+import com.tss.aml.tenant.entity.BatchSummary;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
@@ -64,7 +66,7 @@ public class ReportController {
 
     @GetMapping("/sar-logs")
     @PreAuthorize("hasRole('BANK_ADMIN')")
-    public ResponseEntity<List<com.tss.aml.dto.result.CaseResponseDto>> getSarLogs() {
+    public ResponseEntity<List<CaseResponseDto>> getSarLogs() {
         return ResponseEntity.ok(reportService.getSarLogs());
     }
 
@@ -76,7 +78,7 @@ public class ReportController {
 
     @GetMapping("/batch-summaries")
     @PreAuthorize("hasRole('BANK_ADMIN')")
-    public ResponseEntity<List<com.tss.aml.tenant.entity.BatchSummary>> getBatchSummaries() {
+    public ResponseEntity<List<BatchSummary>> getBatchSummaries() {
         return ResponseEntity.ok(reportService.getBatchSummaries());
     }
 

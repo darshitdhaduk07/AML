@@ -10,8 +10,6 @@ import com.tss.aml.tenant.entity.Transaction;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
 @RequiredArgsConstructor
 public class CustomerResponseDtoMapper {

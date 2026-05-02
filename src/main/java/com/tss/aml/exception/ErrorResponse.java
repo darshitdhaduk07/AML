@@ -2,7 +2,6 @@ package com.tss.aml.exception;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
@@ -18,12 +17,10 @@ public class ErrorResponse {
 
     private Map<String,String> errors;
 
-
     public ErrorResponse(String message, int status, String path) {
         this.message = message;
         this.status = status;
         this.timestamp = LocalDateTime.now();
     }
-
 
 }

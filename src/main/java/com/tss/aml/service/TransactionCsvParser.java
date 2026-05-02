@@ -6,13 +6,10 @@ import com.tss.aml.dto.result.TransactionParseResult;
 import com.tss.aml.enums.AccountType;
 import com.tss.aml.exception.BulkValidationException;
 import com.tss.aml.exception.ValidationException;
-import com.tss.aml.tenant.entity.Account;
-import com.tss.aml.tenant.entity.Transaction;
 import com.tss.aml.enums.Direction;
 import com.tss.aml.enums.TransactionType;
 import com.tss.aml.exception.CsvParseException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.repository.core.support.TransactionalRepositoryFactoryBeanSupport;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;

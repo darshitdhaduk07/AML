@@ -4,7 +4,6 @@ import com.tss.aml.enums.Role;
 import com.tss.aml.model.AppUser;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -22,7 +21,7 @@ public class JwtService {
     @Autowired
     private BlacklistService blacklistService;
 //    @Value("${jwt.secret}")
-    private String secret;
+    private final String secret;
 
     public JwtService() throws NoSuchAlgorithmException {
         KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA256");
@@ -40,10 +39,6 @@ public class JwtService {
         if (user.getRole() != Role.SYSTEM_ADMIN) {
             claims.put("tenant", user.getTenant().substring(7));
         }
-
-//        if (user.getRole() == Role.COMPLIANCE_OFFICER) {
-//            claims.put("authorities", user.getAuthorities());
-//        }
 
         return Jwts.builder()
                 .setClaims(claims)

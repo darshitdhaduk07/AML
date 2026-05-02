@@ -38,7 +38,7 @@ public class MultiTenantConnectionProviderImpl implements MultiTenantConnectionP
 
     @Override
     public void releaseConnection(String tenantIdentifier, Connection connection) throws SQLException {
-        connection.setSchema("public"); // reset
+        connection.setSchema("public");
         releaseAnyConnection(connection);
     }
 

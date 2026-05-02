@@ -3,9 +3,6 @@ package com.tss.aml.dto.result;
 import com.tss.aml.enums.AccountType;
 import com.tss.aml.enums.Direction;
 import com.tss.aml.enums.TransactionType;
-import com.tss.aml.tenant.entity.Account;
-import com.tss.aml.tenant.entity.Customer;
-import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigDecimal;

@@ -3,7 +3,6 @@ package com.tss.aml.service;
 import com.tss.aml.dto.request.TenantRegisterRequestDto;
 import com.tss.aml.exception.BusinessException;
 import com.tss.aml.context.TenantContext;
-import com.tss.aml.dto.request.TenantRegisterRequestDto;
 import com.tss.aml.master.repository.TenantRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

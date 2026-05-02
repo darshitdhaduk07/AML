@@ -14,6 +14,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/rules")
 @RequiredArgsConstructor
@@ -61,13 +63,13 @@ public class RuleController {
 
     @GetMapping("/alerts/all")
     @PreAuthorize("hasRole('BANK_ADMIN')")
-    public ResponseEntity<java.util.List<AlertResponseDto>> getAllAlertsSorted(){
+    public ResponseEntity<List<AlertResponseDto>> getAllAlertsSorted(){
         return ResponseEntity.ok(ruleService.getAllAlertsSorted());
     }
 
     @GetMapping("/alerts/customer/{customerNumber}")
     @PreAuthorize("hasAnyRole('BANK_ADMIN', 'COMPLIANCE_OFFICER')")
-    public ResponseEntity<java.util.List<AlertResponseDto>> getActiveAlertsForCustomer(@PathVariable String customerNumber){
+    public ResponseEntity<List<AlertResponseDto>> getActiveAlertsForCustomer(@PathVariable String customerNumber){
         return ResponseEntity.ok(ruleService.getActiveAlertsForCustomer(customerNumber));
     }
 }

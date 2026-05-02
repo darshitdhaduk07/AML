@@ -11,9 +11,6 @@ import java.util.UUID;
 
 @Repository
 public interface InAppNotificationRepository extends JpaRepository<InAppNotification, UUID> {
-    Page<InAppNotification> findByRecipientEmailOrderByCreatedAtDesc(String recipientEmail, Pageable pageable);
-
-    Page<InAppNotification> findByRecipientEmailAndRoleOrderByCreatedAtDesc(String recipientEmail, Role role, Pageable pageable);
 
     Page<InAppNotification> findByRecipientEmailAndRoleAndIsReadFalseOrderByCreatedAtDesc(String recipientEmail, Role role, Pageable pageable);
 }

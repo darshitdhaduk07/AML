@@ -2,7 +2,6 @@ package com.tss.aml.filter;
 
 import com.tss.aml.authentication.TenantAuthenticationToken;
 import com.tss.aml.context.TenantContext;
-import com.tss.aml.dto.request.LoginRequestDto;
 import com.tss.aml.enums.Role;
 import com.tss.aml.model.AppUser;
 import com.tss.aml.service.BlacklistService;
@@ -10,6 +9,7 @@ import com.tss.aml.service.JwtService;
 import io.jsonwebtoken.*;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,9 +27,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Autowired
     private BlacklistService blacklistService;
 
-
     @Override
-    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest req, @NonNull HttpServletResponse res, @NonNull FilterChain chain) throws ServletException, IOException {
 
         String header = req.getHeader("Authorization");
         if (header == null || !header.startsWith("Bearer ")) {
@@ -73,33 +72,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if ("SYSTEM_ADMIN".equals(role)) {
             TenantContext.setTenant("master");
 
-        } else if ("BANK_ADMIN".equals(role)) {
+        } else if ("BANK_ADMIN".equals(role) || "COMPLIANCE_OFFICER".equals(role)) {
             if (tenant == null || tenant.isBlank()) {
-                sendError(res, "TOKEN_INVALID", "Missing tenant for BANK_ADMIN");
+                sendError(res, "TOKEN_INVALID", "Missing tenant.");
                 return;
             }
             TenantContext.setTenant("tenant_" + tenant);
-
-        } else if ("COMPLIANCE_OFFICER".equals(role)) {
-            if (tenant == null || tenant.isBlank()) {
-                sendError(res, "TOKEN_INVALID", "Missing tenant for COMPLIANCE_OFFICER");
-                return;
-            }
-            TenantContext.setTenant("tenant_" + tenant);
-
-//            List<String> auths = claims.get("authorities", List.class);
-//            if (auths == null || auths.isEmpty()) {
-//                sendError(res, "TOKEN_INVALID", "COMPLIANCE_OFFICER must have authorities");
-//                return;
-//            }
-//            auths.forEach(a -> authorities.add(new SimpleGrantedAuthority("AUTH_" + a)));
-
         } else {
             sendError(res, "TOKEN_INVALID", "Unknown role: " + role);
             return;
         }
-
-
 
         // Step 4 — set Spring Security context
 
@@ -116,7 +98,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         try {
             chain.doFilter(req, res);
         } finally {
-            TenantContext.clear(); // always clean up ThreadLocal
+            TenantContext.clear(); //cleaning up ThreadLocal
         }
     }
 

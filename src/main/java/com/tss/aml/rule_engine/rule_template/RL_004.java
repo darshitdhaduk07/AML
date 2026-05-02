@@ -1,11 +1,8 @@
 package com.tss.aml.rule_engine.rule_template;
 
 import com.tss.aml.model.ParameterMeta;
-import com.tss.aml.tenant.entity.Customer;
-import com.tss.aml.tenant.entity.Transaction;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -50,11 +47,6 @@ public class RL_004 implements CustomerRuleTemplate {
                   AND ah.amount > CAST(:threshold AS numeric)
                   AND EXTRACT(EPOCH FROM (ah.txn_time - COALESCE(ah.prev_txn_time, ah.account_created_at))) / 86400 > CAST(:duration AS numeric)
                 """;
-    }
-
-    @Override
-    public List<Transaction> check(Customer customer, Map<String, Object> parameters) {
-        return null;
     }
 
     @Override

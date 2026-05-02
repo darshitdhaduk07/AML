@@ -2,6 +2,7 @@ package com.tss.aml.master.repository;
 
 import com.tss.aml.master.entity.BlacklistedToken;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -14,7 +15,8 @@ public interface BlacklistedTokenRepository extends JpaRepository<BlacklistedTok
             nativeQuery = true
     )
     boolean existsByJti(@Param("jti") UUID jti);
-    @org.springframework.data.jpa.repository.Modifying
+
+    @Modifying
     @Query(
             value = "INSERT INTO master.blacklisted_tokens (id, jti, user_id, tenant_id, blacklisted_at, expires_at) " +
                     "VALUES (:id, :jti, :userId, :tenantId, :blacklistedAt, :expiresAt)",
@@ -29,7 +31,7 @@ public interface BlacklistedTokenRepository extends JpaRepository<BlacklistedTok
             @Param("expiresAt") LocalDateTime expiresAt
     );
 
-    @org.springframework.data.jpa.repository.Modifying
+    @Modifying
     @Query(
             value = "DELETE FROM master.blacklisted_tokens WHERE expires_at < :threshold",
             nativeQuery = true

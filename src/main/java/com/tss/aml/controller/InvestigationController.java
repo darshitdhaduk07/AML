@@ -5,6 +5,7 @@ import com.tss.aml.dto.request.ComplianceInvestigationAssignmentDto;
 import com.tss.aml.dto.result.CaseResponseDto;
 import com.tss.aml.dto.result.ComplianceInvestigationAssignmentResponseDto;
 import com.tss.aml.dto.result.PaginatedResponseDto;
+import com.tss.aml.enums.CaseStatus;
 import com.tss.aml.service.InvestigationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -39,10 +40,12 @@ public class InvestigationController {
     @GetMapping("/cases")
     @PreAuthorize("hasAnyRole('COMPLIANCE_OFFICER', 'BANK_ADMIN')")
     public ResponseEntity<PaginatedResponseDto<CaseResponseDto>> getCases(
-            @RequestParam(required = false) com.tss.aml.enums.CaseStatus status,
+            @RequestParam(required = false) CaseStatus status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size){
+
         Pageable pageable = PageRequest.of(page, size);
+
         return ResponseEntity.ok(status != null ? 
                 investigationService.getCasesByStatus(status, pageable) : 
                 investigationService.getCases(pageable));

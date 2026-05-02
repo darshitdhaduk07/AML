@@ -5,6 +5,7 @@ import com.tss.aml.dto.result.PaginatedResponseDto;
 import com.tss.aml.enums.NotificationType;
 import com.tss.aml.enums.Role;
 import com.tss.aml.exception.ResourceNotFoundException;
+import com.tss.aml.mapper.InAppNotificationMapper;
 import com.tss.aml.tenant.entity.InAppNotification;
 import com.tss.aml.tenant.repository.InAppNotificationRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class InAppNotificationService {
 
     private final InAppNotificationRepository inAppNotificationRepository;
     private final AppUserService appUserService;
+    private final InAppNotificationMapper notificationMapper;
 
     public void createNotification(String recipientEmail, Role role, NotificationType type, String message) {
         InAppNotification notification = new InAppNotification();
@@ -36,24 +38,12 @@ public class InAppNotificationService {
 
     public PaginatedResponseDto<InAppNotificationResponseDto> getNotificationsForCurrentUser(Pageable pageable) {
         String email = appUserService.get().getUsername();
-        Page<InAppNotification> notificationPage = inAppNotificationRepository.findByRecipientEmailOrderByCreatedAtDesc(email, pageable);
+        Role role = appUserService.get().getRole();
+
+        Page<InAppNotification> notificationPage = inAppNotificationRepository.findByRecipientEmailAndRoleAndIsReadFalseOrderByCreatedAtDesc(email, role, pageable);
         
         return PaginatedResponseDto.<InAppNotificationResponseDto>builder()
-                .content(notificationPage.getContent().stream().map(this::convertToDto).collect(Collectors.toList()))
-                .pageNumber(notificationPage.getNumber())
-                .pageSize(notificationPage.getSize())
-                .totalElements(notificationPage.getTotalElements())
-                .totalPages(notificationPage.getTotalPages())
-                .last(notificationPage.isLast())
-                .build();
-    }
-
-    public PaginatedResponseDto<InAppNotificationResponseDto> getNotificationsForRole(Role role, Pageable pageable) {
-        String email = appUserService.get().getUsername();
-        Page<InAppNotification> notificationPage = inAppNotificationRepository.findByRecipientEmailAndRoleAndIsReadFalseOrderByCreatedAtDesc(email, role, pageable);
-
-        return PaginatedResponseDto.<InAppNotificationResponseDto>builder()
-                .content(notificationPage.getContent().stream().map(this::convertToDto).collect(Collectors.toList()))
+                .content(notificationPage.getContent().stream().map(notificationMapper::toDto).collect(Collectors.toList()))
                 .pageNumber(notificationPage.getNumber())
                 .pageSize(notificationPage.getSize())
                 .totalElements(notificationPage.getTotalElements())
@@ -75,13 +65,4 @@ public class InAppNotificationService {
         inAppNotificationRepository.save(notification);
     }
 
-    private InAppNotificationResponseDto convertToDto(InAppNotification notification) {
-        InAppNotificationResponseDto dto = new InAppNotificationResponseDto();
-        dto.setId(notification.getId());
-        dto.setMessage(notification.getMessage());
-        dto.setType(notification.getType());
-        dto.setRead(notification.isRead());
-        dto.setCreatedAt(notification.getCreatedAt());
-        return dto;
-    }
 }

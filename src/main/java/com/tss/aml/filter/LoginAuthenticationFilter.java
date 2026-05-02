@@ -8,7 +8,6 @@ import com.tss.aml.service.JwtService;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 
-import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,7 +18,7 @@ import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 @Component
 public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
@@ -27,7 +26,7 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
     @Autowired
     private JwtService jwtService;
 
-    public LoginAuthenticationFilter(AuthenticationManager manager) throws NoSuchAlgorithmException {
+    public LoginAuthenticationFilter(AuthenticationManager manager) {
         super("/login");
         setAuthenticationManager(manager);
     }
@@ -64,7 +63,7 @@ public class LoginAuthenticationFilter extends AbstractAuthenticationProcessingF
         response.getWriter().write("""
                 {
                   "message":"Login Success",
-                  "jwt":\"""" + jwtService.generateToken((AppUser) auth.getPrincipal()) + "\"\n}");
+                  "jwt":\"""" + jwtService.generateToken((AppUser) Objects.requireNonNull(auth.getPrincipal())) + "\"\n}");
     }
 
     @Override

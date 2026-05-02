@@ -1,59 +1,39 @@
 package com.tss.aml.service;
 
 import com.tss.aml.dto.request.CaseReportData;
+import com.tss.aml.dto.result.CaseResponseDto;
 import com.tss.aml.reports.CaseReportRow;
 import com.tss.aml.reports.ReportRow;
 import com.tss.aml.tenant.entity.Case;
-import com.tss.aml.tenant.repository.BrokenRuleRepository;
-import com.tss.aml.tenant.repository.CaseRepository;
+import com.tss.aml.tenant.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ReportService {
     private final BrokenRuleRepository brokenRuleRepository;
     private final CaseRepository caseRepository;
-    private final com.tss.aml.tenant.repository.ComplianceOfficerRepository complianceOfficerRepository;
-    private final com.tss.aml.tenant.repository.ComplianceInvestigationAssignmentRepository assignmentRepository;
-    private final com.tss.aml.tenant.repository.BatchSummaryRepository batchSummaryRepository;
-    private final jakarta.persistence.EntityManager entityManager;
-
-    private void checkAndCreateTable() {
-        try {
-            entityManager.createNativeQuery("""
-                CREATE TABLE IF NOT EXISTS batch_summaries (
-                    id UUID PRIMARY KEY,
-                    created_at TIMESTAMP NOT NULL,
-                    updated_at TIMESTAMP,
-                    file_name VARCHAR(255) NOT NULL,
-                    file_type VARCHAR(255) NOT NULL,
-                    record_count BIGINT NOT NULL,
-                    status VARCHAR(255) NOT NULL,
-                    error_message VARCHAR(1000)
-                )
-            """).executeUpdate();
-        } catch (Exception e) {
-            // Log and ignore
-        }
-    }
+    private final ComplianceOfficerRepository complianceOfficerRepository;
+    private final ComplianceInvestigationAssignmentRepository assignmentRepository;
+    private final BatchSummaryRepository batchSummaryRepository;
 
     public List<ReportRow> getReport(LocalDateTime from, LocalDateTime to) {
 
         List<ReportRow> rows = brokenRuleRepository.getReportDataBetween(from, to);
 
-        Map<String, Integer> totalRiskMap = rows.stream()
-                .collect(Collectors.groupingBy(
-                        ReportRow::getTxnNumber,
-                        Collectors.summingInt(ReportRow::getScore)
-                ));
+//        Map<String, Integer> totalRiskMap = rows.stream()
+//                .collect(Collectors.groupingBy(
+//                        ReportRow::getTxnNumber,
+//                        Collectors.summingInt(ReportRow::getScore)
+//                ));
 
         return rows.stream()
                 .map(r -> new ReportRow(
@@ -83,7 +63,7 @@ public class ReportService {
         return new CaseReportData(c, rows);
     }
 
-    public List<com.tss.aml.dto.result.CaseResponseDto> getSarLogs() {
+    public List<CaseResponseDto> getSarLogs() {
         return caseRepository.findBySarFiledTrue().stream()
                 .map(c -> {
                     com.tss.aml.dto.result.CaseResponseDto dto = new com.tss.aml.dto.result.CaseResponseDto();
@@ -112,9 +92,8 @@ public class ReportService {
                 .toList();
     }
 
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public List<com.tss.aml.tenant.entity.BatchSummary> getBatchSummaries() {
-        checkAndCreateTable();
         return batchSummaryRepository.findAllByOrderByCreatedAtDesc();
     }
 
