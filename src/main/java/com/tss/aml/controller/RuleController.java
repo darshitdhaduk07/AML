@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/rules")
@@ -71,5 +72,18 @@ public class RuleController {
     @PreAuthorize("hasAnyRole('BANK_ADMIN', 'COMPLIANCE_OFFICER')")
     public ResponseEntity<List<AlertResponseDto>> getActiveAlertsForCustomer(@PathVariable String customerNumber){
         return ResponseEntity.ok(ruleService.getActiveAlertsForCustomer(customerNumber));
+    }
+
+    @DeleteMapping("/{tenant}/{id}")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
+    @Transactional
+    public ResponseEntity<String> deleteRule(@PathVariable String tenant, @PathVariable UUID id){
+        try {
+            TenantContext.setTenant("tenant_" + tenant);
+            ruleService.deleteSelectedRule(id);
+            return ResponseEntity.ok("Rule deleted successfully.");
+        } finally {
+            TenantContext.clear();
+        }
     }
 }

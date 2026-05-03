@@ -234,7 +234,8 @@ alter table if exists broken_rules
 alter table if exists broken_rules
     add constraint FKdnoxurpbrxlv3abm32bc3qwql
     foreign key (selected_rule_id)
-    references selected_rules;
+    references selected_rules
+    on delete cascade;
 
 alter table if exists broken_rules
     add constraint FK90pg57ph9ghub4qyneaq3opfi
