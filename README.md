@@ -151,5 +151,19 @@ The system implements strict **Role-Based Access Control (RBAC)**:
 | `/api/v1/reports/cases/{id}/pdf` | `GET` | All | Generate full case investigation report. |
 | `/api/v1/reports/co-performance` | `GET` | `BANK_ADMIN` | View officer productivity metrics. |
 
+## ⚡ Database Optimization
+
+To maintain high performance as data scales, the following indexes are recommended:
+
+| Index Name | Table | Column(s) | Primary Benefit |
+| :--- | :--- | :--- | :--- |
+| **`idx_bt_jti`** | `blacklisted_tokens` | `jti` | Ensures zero-latency security checks on every API call. |
+| **`idx_txn_eval`** | `transactions` | `evaluated` | Prevents the Rule Engine from stalling as transaction volume grows. |
+| **`idx_txn_cust_time`**| `transactions` | `customer_id, txn_time`| Optimizes complex pattern-matching and velocity rules. |
+| **`idx_cust_num`** | `customers` | `customer_number` | Accelerates bulk CSV data ingestion and customer lookups. |
+| **`idx_br_active`** | `broken_rules` | `active, created_at` | Keeps the Alert Dashboard and PDF reports loading instantly. |
+| **`idx_case_status`** | `cases` | `case_status` | Provides a smooth experience for officers managing 100s of cases. |
+
 ---
 *Developed as part of the Swabhav Project Capstone.*
+
