@@ -8,7 +8,11 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -18,6 +22,8 @@ import java.util.stream.Collectors;
 
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.*;
+
+import static com.tss.aml.constant.GlobalConstants.REPORT_DIR;
 
 @Service
 public class PdfReportService {
@@ -170,6 +176,17 @@ public class PdfReportService {
 
         return new ByteArrayInputStream(out.toByteArray());
     }
+    public void saveCaseReport(Case c, List<CaseReportRow> rows) {
+        ByteArrayInputStream pdf = generateCaseReport(c, rows);
+        try {
+            Path path = Paths.get(REPORT_DIR + c.getId() + ".pdf");
+            Files.createDirectories(path.getParent());
+            Files.write(path, pdf.readAllBytes());
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to save PDF", e);
+        }
+    }
+
     private String generateNarrative(List<CaseReportRow> rows) {
 
         int totalRisk = rows.stream()

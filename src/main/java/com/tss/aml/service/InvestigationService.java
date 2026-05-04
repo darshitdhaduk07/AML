@@ -36,6 +36,8 @@ public class InvestigationService {
     private final CustomerResponseDtoMapper customerResponseDtoMapper;
     private final InAppNotificationService inAppNotificationService;
     private final BankAdminRepository bankAdminRepository;
+    private final ReportService reportService;
+    private final PdfReportService pdfReportService;
 
     @Transactional
     public void assignComplianceOfficer(ComplianceInvestigationAssignmentDto request) {
@@ -106,7 +108,7 @@ public class InvestigationService {
     public PaginatedResponseDto<ComplianceInvestigationAssignmentResponseDto> getAssignments(Pageable pageable) {
         Page<ComplianceInvestigationAssignment> assignmentPage =
                 complianceInvestigationAssignmentRepository
-                        .findByComplianceOfficerId
+                        .findByComplianceOfficerIdAndIsOpenTrue
                                 (
                                         complianceOfficerRepository
                                                 .findByEmail(appUserService.get().getUsername())
@@ -177,6 +179,16 @@ public class InvestigationService {
         return caseRepository.existsByInvestigatedCustomerCustomerAndInvestigatedCustomerIsOpenTrue(customerNumber);
     }
 
+    @Transactional
+    public void closeAssignment(String customerNumber) {
+        ComplianceInvestigationAssignment assignment = complianceInvestigationAssignmentRepository
+                .findByCustomerCustomerNumberAndIsOpenTrue(customerNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("Active Investigation", customerNumber));
+        
+        assignment.setIsOpen(false);
+        complianceInvestigationAssignmentRepository.save(assignment);
+    }
+
     public PaginatedResponseDto<CaseResponseDto> getEscalatedCases(Pageable pageable) {
         return getCasesByStatus(CaseStatus.ESCALATED, pageable);
     }
@@ -231,10 +243,14 @@ public class InvestigationService {
         if (caseData.getCaseStatus() == CaseStatus.CLOSED) {
             throw new ClosedCaseException();
         }
+
+        var data = reportService.getCaseReport(caseId);
+        pdfReportService.saveCaseReport(data.getCaseEntity(), data.getRows());
         
         caseData.setSarFiled(true);
         caseData.setCaseStatus(CaseStatus.CLOSED);
         caseRepository.save(caseData);
+        finalizeClosing(caseData);
 
         // Notify Bank Admin
         notifyBankAdmin(NotificationType.SAR_FILED, "SAR/STR has been filed for case " + caseData.getCaseName() + ".");
@@ -251,6 +267,18 @@ public class InvestigationService {
         
         caseData.setCaseStatus(CaseStatus.CLOSED);
         caseRepository.save(caseData);
+        finalizeClosing(caseData);
+    }
+
+    private void finalizeClosing(Case caseData) {
+        ComplianceInvestigationAssignment assignment = caseData.getInvestigatedCustomer();
+        assignment.setIsOpen(false);
+        complianceInvestigationAssignmentRepository.save(assignment);
+
+        List<BrokenRule> brokenRules = brokenRuleRepository.findByCustomerCustomerNumberAndActiveTrue(
+                assignment.getCustomer().getCustomerNumber());
+        brokenRules.forEach(rule -> rule.setActive(false));
+        brokenRuleRepository.saveAll(brokenRules);
     }
 
     private void notifyBankAdmin(NotificationType type, String message) {

@@ -103,7 +103,7 @@ public class CustomerCsvParser {
         customer.setCountryOfBirth(require(fields[8], "country_of_birth", lineNumber,rowErrors,3));
         customer.setIncome(parseDecimal(fields[9], "income", lineNumber,rowErrors));
         customer.setNetWorth(parseDecimal(fields[10], "net_worth", lineNumber,rowErrors));
-        log.debug("Parsed customer: {}", customer.getCustomerNumber());
+//        log.debug("Parsed customer: {}", customer.getCustomerNumber());
 
         if (!rowErrors.isEmpty()) {
             throw new BulkValidationException(rowErrors);

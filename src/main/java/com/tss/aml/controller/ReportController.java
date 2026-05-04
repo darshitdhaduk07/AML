@@ -14,10 +14,17 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import static com.tss.aml.constant.GlobalConstants.REPORT_DIR;
 
 @RestController
 @RequestMapping("/api/v1/reports")
@@ -51,17 +58,21 @@ public class ReportController {
                 .body(new InputStreamResource(pdf));
     }
     @GetMapping("/cases/{id}/pdf")
-    public ResponseEntity<InputStreamResource> downloadCaseReport(@PathVariable UUID id) {
+    public ResponseEntity<InputStreamResource> downloadCaseReport(@PathVariable UUID id) throws IOException {
 
-        CaseReportData data = reportService.getCaseReport(id);
+        Path path = Paths.get(REPORT_DIR + id + ".pdf");
 
-        ByteArrayInputStream pdf =
-                pdfService.generateCaseReport(data.getCaseEntity(), data.getRows());
+        if (!Files.exists(path)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        InputStreamResource resource = new InputStreamResource(new FileInputStream(path.toFile()));
 
         return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=case-report.pdf")
+                .header("Content-Disposition", "attachment; filename=case-report-" + id + ".pdf")
                 .contentType(MediaType.APPLICATION_PDF)
-                .body(new InputStreamResource(pdf));
+                .contentLength(Files.size(path))
+                .body(resource);
     }
 
     @GetMapping("/sar-logs")

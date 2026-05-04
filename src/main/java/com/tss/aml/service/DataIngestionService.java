@@ -53,7 +53,7 @@ public class DataIngestionService {
                 .createNativeQuery("select current_schema()")
                 .getSingleResult();
 
-        log.debug("Inserting customer batch into DB Schema = {}", schema);
+//        log.debug("Inserting customer batch into DB Schema = {}", schema);
 
         StringBuilder sql = new StringBuilder("""
                 INSERT INTO customers (

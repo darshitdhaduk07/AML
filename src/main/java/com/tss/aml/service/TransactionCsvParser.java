@@ -30,10 +30,10 @@ import static com.tss.aml.constant.GlobalConstants.TRANSACTION_EXPECTED_HEADERS;
 @Slf4j
 @Component
 public class TransactionCsvParser {
-    private final Map<String, ParseAccount> accountMap = new HashMap<>();
-    private final List<ValidationException> errors = new ArrayList<>();
+    private Map<String, ParseAccount> accountMap = new HashMap<>();
 
     public TransactionParseResult parse(InputStream inputStream) throws IOException {
+        accountMap = new HashMap<>();
         List<ValidationException> errors = new ArrayList<>();
         List<ParseTransaction> transactions = new ArrayList<>();
 
