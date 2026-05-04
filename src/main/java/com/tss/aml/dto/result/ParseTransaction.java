@@ -22,4 +22,5 @@ public class ParseTransaction {
     private String IFSC;
     private String customerNumber;
     private String accountNumber;
+    private int rowNumber;
 }

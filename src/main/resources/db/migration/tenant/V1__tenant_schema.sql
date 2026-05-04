@@ -107,6 +107,7 @@ CREATE TABLE batch_summaries (
                                  record_count BIGINT NOT NULL,
                                  status VARCHAR(255) NOT NULL,
                                  error_message VARCHAR(1000),
+                                 details TEXT,
 
                                  created_at timestamp(6),
                                  updated_at timestamp(6)
