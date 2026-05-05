@@ -14,6 +14,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CustomerResponseDtoMapper {
     private final RuleTemplateFactory ruleTemplateFactory;
+    private final com.tss.aml.tenant.repository.BrokenRuleRepository brokenRuleRepository;
+
     public CustomerResponseDto mapCustomer(Customer customer) {
 
         CustomerResponseDto dto = new CustomerResponseDto();
@@ -29,6 +31,9 @@ public class CustomerResponseDtoMapper {
         dto.setCountryOfBirth(customer.getCountryOfBirth());
         dto.setIncome(customer.getIncome());
         dto.setNetWorth(customer.getNetWorth());
+        
+        Integer riskScore = brokenRuleRepository.calculateRiskScoreByCustomerNumber(customer.getCustomerNumber());
+        dto.setRiskScore(riskScore != null ? riskScore : 0);
 
         return dto;
     }

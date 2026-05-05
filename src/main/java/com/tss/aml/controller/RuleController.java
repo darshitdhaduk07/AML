@@ -3,6 +3,7 @@ package com.tss.aml.controller;
 import com.tss.aml.context.TenantContext;
 import com.tss.aml.dto.request.SelectedRuleRegisterDto;
 import com.tss.aml.dto.result.AlertResponseDto;
+import com.tss.aml.dto.result.CustomerResponseDto;
 import com.tss.aml.dto.result.PaginatedResponseDto;
 import com.tss.aml.dto.result.SelectedRuleResponseDto;
 import com.tss.aml.service.RuleService;
@@ -54,7 +55,7 @@ public class RuleController {
 
     @GetMapping("/alerts")
     @PreAuthorize("hasRole('BANK_ADMIN')")
-    public ResponseEntity<PaginatedResponseDto<AlertResponseDto>> getAlerts(
+    public ResponseEntity<PaginatedResponseDto<CustomerResponseDto>> getAlerts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size){
         Pageable pageable = PageRequest.of(page, size);

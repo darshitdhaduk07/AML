@@ -2,6 +2,7 @@ package com.tss.aml.service;
 
 import com.tss.aml.dto.request.SelectedRuleRegisterDto;
 import com.tss.aml.dto.result.AlertResponseDto;
+import com.tss.aml.dto.result.CustomerResponseDto;
 import com.tss.aml.dto.result.PaginatedResponseDto;
 import com.tss.aml.dto.result.SelectedRuleResponseDto;
 import com.tss.aml.exception.ParameterMismatchException;
@@ -9,6 +10,7 @@ import com.tss.aml.mapper.CustomerResponseDtoMapper;
 import com.tss.aml.rule_engine.rule_template.IRuleTemplate;
 import com.tss.aml.rule_engine.RuleTemplateFactory;
 import com.tss.aml.tenant.entity.BrokenRule;
+import com.tss.aml.tenant.entity.Customer;
 import com.tss.aml.tenant.entity.SelectedRule;
 import com.tss.aml.tenant.repository.BrokenRuleRepository;
 import com.tss.aml.tenant.repository.SelectedRuleRepository;
@@ -74,32 +76,20 @@ public class RuleService {
                 .build();
     }
 
-    public PaginatedResponseDto<AlertResponseDto> getAlerts(Pageable pageable) {
-        Page<BrokenRule> brokenRulePage = brokenRuleRepository.findAlertsWithoutOpenInvestigation(pageable);
+    public PaginatedResponseDto<CustomerResponseDto> getAlerts(Pageable pageable) {
+        Page<Customer> customerPage = brokenRuleRepository.findUniqueCustomersWithAlerts(pageable);
         
-        List<AlertResponseDto> dtos = brokenRulePage.getContent().stream()
-                .map(br -> {
-                    AlertResponseDto dto = new AlertResponseDto();
-                    dto.setActive(br.getActive());
-                    dto.setGroup_id(br.getGroup_id());
-                    dto.setRuleDescription(br.getRule().getDescription());
-                    dto.setCustomer_number(br.getCustomer().getCustomerNumber());
-                    dto.setTransaction(customerResponseDtoMapper.mapTransaction(br.getTransaction()));
-                    dto.setRuleType(ruleTemplateFactory.getRuleTemplate(br.getRule().getRuleCode()).getRuleType());
-                    dto.setWeight(br.getRule().getWeight());
-                    dto.setRuleCode(br.getRule().getRuleCode());
-
-                    return dto;
-                })
+        List<CustomerResponseDto> dtos = customerPage.getContent().stream()
+                .map(customerResponseDtoMapper::mapCustomer)
                 .collect(Collectors.toList());
 
-        return PaginatedResponseDto.<AlertResponseDto>builder()
+        return PaginatedResponseDto.<CustomerResponseDto>builder()
                 .content(dtos)
-                .pageNumber(brokenRulePage.getNumber())
-                .pageSize(brokenRulePage.getSize())
-                .totalElements(brokenRulePage.getTotalElements())
-                .totalPages(brokenRulePage.getTotalPages())
-                .last(brokenRulePage.isLast())
+                .pageNumber(customerPage.getNumber())
+                .pageSize(customerPage.getSize())
+                .totalElements(customerPage.getTotalElements())
+                .totalPages(customerPage.getTotalPages())
+                .last(customerPage.isLast())
                 .build();
     }
 

@@ -60,9 +60,22 @@ public interface BrokenRuleRepository extends JpaRepository<BrokenRule, UUID> {
     """)
     Page<BrokenRule> findAlertsWithoutOpenInvestigation(Pageable pageable);
 
+    @Query("""
+        SELECT DISTINCT br.customer FROM BrokenRule br 
+        WHERE br.active = true 
+        AND NOT EXISTS (
+            SELECT 1 FROM ComplianceInvestigationAssignment cia 
+            WHERE cia.customer = br.customer AND cia.isOpen = true
+        )
+    """)
+    Page<com.tss.aml.tenant.entity.Customer> findUniqueCustomersWithAlerts(Pageable pageable);
+
     Page<BrokenRule> findByActiveTrue(Pageable pageable);
 
     List<BrokenRule> findByCustomerCustomerNumberAndActiveTrue(String customerNumber);
 
     List<BrokenRule> findAllByOrderByTransactionTxnTimeDesc();
+
+    @Query("SELECT SUM(br.rule.weight) FROM BrokenRule br WHERE br.customer.customerNumber = :customerNumber AND br.active = true AND br.falsePositive = false")
+    Integer calculateRiskScoreByCustomerNumber(String customerNumber);
 }
