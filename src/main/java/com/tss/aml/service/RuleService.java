@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,7 +61,9 @@ public class RuleService {
                     dto.setDescription(sr.getDescription());
                     dto.setRuleCode(sr.getRuleCode());
                     dto.setWeight(sr.getWeight());
+                    dto.setSelectedRuleId(sr.getId());
                     dto.setParameters(sr.getParameters());
+                    dto.setSelectedRuleId(sr.getId());
 
                     return dto;
                 })
@@ -118,5 +121,10 @@ public class RuleService {
         return brokenRules.stream()
                 .map(customerResponseDtoMapper::mapAlert)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void deleteSelectedRule(UUID selectedRuleId) {
+        selectedRuleRepository.deleteById(selectedRuleId);
     }
 }

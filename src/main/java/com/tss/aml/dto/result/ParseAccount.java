@@ -11,4 +11,5 @@ public class ParseAccount {
     private AccountType accountType;
     private String IFSC;
     private String customerNumber;
+    private int rowNumber;
 }

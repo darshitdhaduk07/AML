@@ -82,7 +82,9 @@ public class FileUploadController {
 
         } catch (Exception e) {
             log.error("Error during {} file upload: {}", type, fileName, e);
-            return ResponseEntity.internalServerError().body(e.getMessage());
+            String message = (e instanceof com.tss.aml.exception.BulkValidationException) ? 
+                "Validation failed. Please check the Batch Summary for details." : e.getMessage();
+            return ResponseEntity.internalServerError().body(message);
         }
     }
 

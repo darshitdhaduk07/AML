@@ -102,4 +102,11 @@ public class InvestigationController {
         investigationService.fileSAR(caseId);
         return ResponseEntity.ok("SAR/STR Filed.");
     }
+
+    @PutMapping("/alerts/{customerNumber}/close")
+    @PreAuthorize("hasRole('COMPLIANCE_OFFICER')")
+    public ResponseEntity<String> closeAlert(@PathVariable String customerNumber) {
+        investigationService.closeAssignment(customerNumber);
+        return ResponseEntity.ok("Alert Closed.");
+    }
 }

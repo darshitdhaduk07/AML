@@ -11,6 +11,7 @@ import com.tss.aml.tenant.repository.ComplianceOfficerRepository;
 import com.tss.aml.master.repository.SystemAdminRepository;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -26,6 +27,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     private final BankAdminRepository bankAdminRepo;
     private final SystemAdminRepository systemAdminRepo;
     private final ComplianceOfficerRepository complianceOfficerRepo;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public Authentication authenticate(@NonNull Authentication auth) {
@@ -48,7 +50,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         switch (role) {
             case BANK_ADMIN:
                 BankAdmin bankAdmin = bankAdminRepo.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
-                if (!password.matches(bankAdmin.getPassword()))
+                if (!passwordEncoder.matches(password, bankAdmin.getPassword()))
                     throw new BadCredentialsException("Wrong Credentials");
                 user.setId(bankAdmin.getId());
                 break;
@@ -60,7 +62,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
                 break;
             case COMPLIANCE_OFFICER:
                 ComplianceOfficer complianceOfficer = complianceOfficerRepo.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
-                if (!password.matches(complianceOfficer.getPassword()))
+                if (!passwordEncoder.matches(password, complianceOfficer.getPassword()))
                     throw new BadCredentialsException("Wrong Credentials");
                 user.setId(complianceOfficer.getId());
                 break;

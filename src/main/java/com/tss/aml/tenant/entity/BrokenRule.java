@@ -20,7 +20,7 @@ public class BrokenRule extends BaseEntity{
     @JoinColumn(name = "customer_number", referencedColumnName = "customerNumber", nullable = false)
     private Customer customer;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "selected_rule_id", nullable = false)
     private SelectedRule rule;
 

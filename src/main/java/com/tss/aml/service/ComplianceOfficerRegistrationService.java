@@ -6,6 +6,7 @@ import com.tss.aml.tenant.entity.ComplianceOfficer;
 import com.tss.aml.tenant.repository.ComplianceOfficerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,7 @@ public class ComplianceOfficerRegistrationService {
     private final ComplianceOfficerRepository repo;
     private final PasswordGenerator passwordGenerator;
     private final NotificationService notificationService;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public void registerCO(ComplianceOfficerRegisterRequestDto request, String password) {
@@ -30,7 +32,7 @@ public class ComplianceOfficerRegistrationService {
         ComplianceOfficer complianceOfficer = new ComplianceOfficer();
 
         complianceOfficer.setEmail(email);
-        complianceOfficer.setPassword(password);
+        complianceOfficer.setPassword(passwordEncoder.encode(password));
 
         repo.save(complianceOfficer);
 

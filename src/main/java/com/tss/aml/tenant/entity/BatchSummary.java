@@ -26,4 +26,7 @@ public class BatchSummary extends BaseEntity {
 
     @Column(length = 1000)
     private String errorMessage;
+
+    @Column(columnDefinition = "TEXT")
+    private String details; // Stores detailed JSON error list
 }

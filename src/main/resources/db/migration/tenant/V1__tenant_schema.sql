@@ -107,6 +107,7 @@ CREATE TABLE batch_summaries (
                                  record_count BIGINT NOT NULL,
                                  status VARCHAR(255) NOT NULL,
                                  error_message VARCHAR(1000),
+                                 details TEXT,
 
                                  created_at timestamp(6),
                                  updated_at timestamp(6)
@@ -234,7 +235,8 @@ alter table if exists broken_rules
 alter table if exists broken_rules
     add constraint FKdnoxurpbrxlv3abm32bc3qwql
     foreign key (selected_rule_id)
-    references selected_rules;
+    references selected_rules
+    on delete cascade;
 
 alter table if exists broken_rules
     add constraint FK90pg57ph9ghub4qyneaq3opfi
