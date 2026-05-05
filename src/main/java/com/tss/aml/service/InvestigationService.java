@@ -184,9 +184,13 @@ public class InvestigationService {
         ComplianceInvestigationAssignment assignment = complianceInvestigationAssignmentRepository
                 .findByCustomerCustomerNumberAndIsOpenTrue(customerNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Active Investigation", customerNumber));
-        
+
         assignment.setIsOpen(false);
         complianceInvestigationAssignmentRepository.save(assignment);
+
+        List<BrokenRule> brokenRules = brokenRuleRepository.findByCustomerCustomerNumberAndActiveTrue(customerNumber);
+        brokenRules.forEach(rule -> rule.setActive(false));
+        brokenRuleRepository.saveAll(brokenRules);
     }
 
     public PaginatedResponseDto<CaseResponseDto> getEscalatedCases(Pageable pageable) {
