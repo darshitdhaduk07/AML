@@ -103,7 +103,7 @@ The server will start on `http://localhost:8080`.
 ## 🛡️ Security & Roles
 
 The system implements strict **Role-Based Access Control (RBAC)**:
-*   **SYSTEM_ADMIN**: Manages global bank tenants, creates rule templates, and monitors system health.
+*   **SYSTEM_ADMIN**: Manages global bank tenants, creates rule templates, and monitors system.
 *   **BANK_ADMIN**: Manages bank-specific compliance officers, uploads data, configures rules, and views high-level reports.
 *   **COMPLIANCE_OFFICER**: Conducts day-to-day investigations, reviews alerts, and files SAR/STR reports.
 
@@ -160,8 +160,6 @@ To maintain high performance as data scales, the following indexes are recommend
 | **`idx_bt_jti`** | `blacklisted_tokens` | `jti` | Ensures zero-latency security checks on every API call. |
 | **`idx_txn_eval`** | `transactions` | `evaluated` | Prevents the Rule Engine from stalling as transaction volume grows. |
 | **`idx_txn_cust_time`**| `transactions` | `customer_id, txn_time`| Optimizes complex pattern-matching and velocity rules. |
-| **`idx_cust_num`** | `customers` | `customer_number` | Accelerates bulk CSV data ingestion and customer lookups. |
-| **`idx_br_active`** | `broken_rules` | `active, created_at` | Keeps the Alert Dashboard and PDF reports loading instantly. |
 | **`idx_case_status`** | `cases` | `case_status` | Provides a smooth experience for officers managing 100s of cases. |
 
 ---
