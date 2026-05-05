@@ -9,10 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
 import java.security.Key;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 @Service
@@ -20,14 +17,8 @@ import java.util.*;
 public class JwtService {
     @Autowired
     private BlacklistService blacklistService;
-//    @Value("${jwt.secret}")
-    private final String secret;
-
-    public JwtService() throws NoSuchAlgorithmException {
-        KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA256");
-        SecretKey sk = keyGenerator.generateKey();
-        secret = Base64.getEncoder().encodeToString(sk.getEncoded());
-    }
+    @Value("${jwt.secret}")
+    private String secret;
 
     @Value("${jwt.expiry-ms}")
     private long expiryMs;

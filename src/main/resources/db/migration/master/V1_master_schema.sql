@@ -16,7 +16,7 @@ create table master.blacklisted_tokens (
                                            expires_at timestamp(6) not null,
                                            jti uuid not null,
                                            tenant_id varchar(255),
-                                           user_id uuid,
+                                           user_id uuid not null,
                                            primary key (id)
 );
 
