@@ -32,8 +32,9 @@ import static com.tss.aml.constant.GlobalConstants.TRANSACTION_EXPECTED_HEADERS;
 public class TransactionCsvParser {
     private Map<String, ParseAccount> accountMap = new HashMap<>();
 
+
     public TransactionParseResult parse(InputStream inputStream) throws IOException {
-        accountMap = new HashMap<>();
+        this.accountMap = new HashMap<>();
         List<ValidationException> errors = new ArrayList<>();
         List<ParseTransaction> transactions = new ArrayList<>();
 
@@ -59,6 +60,9 @@ public class TransactionCsvParser {
                 } catch (BulkValidationException e) {
                     errors.addAll(e.getErrors());
                     log.warn("Validation error on line {}: {}", lineNumber, e.getMessage());
+                } catch (ValidationException e) {
+                    errors.add(e);
+                    log.warn("Validation error on line {}: {}", lineNumber, e.getMessage());
                 }
 
                 lineNumber++;
@@ -71,7 +75,8 @@ public class TransactionCsvParser {
 
         return new TransactionParseResult(
                 transactions,
-                new ArrayList<>(accountMap.values())
+                new ArrayList<>(accountMap.values()),
+                errors
         );
     }
 
@@ -146,6 +151,7 @@ public class TransactionCsvParser {
         t.setIFSC(ifsc);
         t.setAccountNumber(accountNumber);
         t.setCustomerNumber(customerNumber);
+        t.setRowNumber(lineNumber);
 
         transactions.add(t);
     }
@@ -233,7 +239,7 @@ public class TransactionCsvParser {
     }
 
     private <E extends Enum<E>> E parseEnum(String value, String fieldName, Class<E> enumClass,
-                                            int lineNumber, List<ValidationException> rowErrors) {
+            int lineNumber, List<ValidationException> rowErrors) {
 
         String v = require(value, fieldName, lineNumber, rowErrors, null);
         if (v == null) return null;

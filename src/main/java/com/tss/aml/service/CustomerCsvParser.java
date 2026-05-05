@@ -50,6 +50,9 @@ public class CustomerCsvParser {
                 } catch (BulkValidationException e) {
                     log.warn("Validation error on line {}: {}", lineNumber, e.getMessage());
                     errors.addAll(e.getErrors());
+                } catch (ValidationException e) {
+                    log.warn("Validation error on line {}: {}", lineNumber, e.getMessage());
+                    errors.add(e);
                 }
                 lineNumber++;
             }
