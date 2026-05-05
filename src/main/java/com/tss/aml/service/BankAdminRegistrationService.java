@@ -9,6 +9,7 @@ import com.tss.aml.tenant.repository.BankAdminRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ public class BankAdminRegistrationService {
     private final BankAdminRepository bankAdminRepo;
     private final PasswordGenerator passwordGenerator;
     private final EntityManager entityManager;
+    private final PasswordEncoder passwordEncoder;
     private final NotificationService notificationService;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -37,7 +39,7 @@ public class BankAdminRegistrationService {
         String pass = passwordGenerator.generateStrong();
 
         bankAdmin.setEmail(email);
-        bankAdmin.setPassword(pass);
+        bankAdmin.setPassword(passwordEncoder.encode(pass));
 
         Object schema = entityManager
                 .createNativeQuery("select current_schema()")
