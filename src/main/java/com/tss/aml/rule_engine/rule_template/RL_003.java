@@ -22,7 +22,6 @@ public class RL_003 implements CustomerRuleTemplate {
                     GROUP BY account_number, customer_number
                     HAVING SUM(CASE WHEN direction = 'DR' THEN amount ELSE 0 END) >= (SUM(CASE WHEN direction = 'CR' THEN amount ELSE 0 END) * CAST(:percentage AS decimal) / 100.0)
                     AND SUM(CASE WHEN direction = 'CR' THEN amount ELSE 0 END) > 0
-                    AND SUM(CASE WHEN evaluated = false THEN 1 ELSE 0 END) > 0
                 )
                 INSERT INTO broken_rules (id, selected_rule_id, customer_number, transaction_id, active, group_id, created_at, updated_at, false_positive)
                 SELECT gen_random_uuid(), :ruleId, t.customer_number, t.id, true, as_table.gid, NOW(), NOW(), false
