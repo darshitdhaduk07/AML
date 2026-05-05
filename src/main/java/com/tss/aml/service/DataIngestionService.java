@@ -9,11 +9,14 @@ import com.tss.aml.exception.BulkValidationException;
 import com.tss.aml.exception.ValidationException;
 import com.tss.aml.tenant.entity.BatchSummary;
 import com.tss.aml.tenant.entity.Customer;
+import com.tss.aml.tenant.repository.BatchSummaryRepository;
 import com.tss.aml.tenant.repository.CustomerRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,12 +37,12 @@ public class DataIngestionService {
     private final CustomerCsvParser csvParser;
     private final TransactionCsvParser transactionParser;
     private final CustomerRepository customerRepository;
-    private final com.tss.aml.tenant.repository.BatchSummaryRepository batchSummaryRepository;
+    private final BatchSummaryRepository batchSummaryRepository;
     private final ObjectMapper objectMapper;
     private DataIngestionService self;
 
-    @org.springframework.beans.factory.annotation.Autowired
-    public void setSelf(@org.springframework.context.annotation.Lazy DataIngestionService self) {
+    @Autowired
+    public void setSelf(@Lazy DataIngestionService self) {
         this.self = self;
     }
 
