@@ -17,6 +17,7 @@ public class RL_002 implements CustomerRuleTemplate {
                     SELECT customer_number, gen_random_uuid() as gid
                     FROM transactions
                     WHERE txn_time > NOW() - (CAST(:duration AS text) || ' days')::interval
+                    AND evaluated = false
                     GROUP BY customer_number
                     HAVING COUNT(*) > :threshold
                     AND SUM(CASE WHEN evaluated = false THEN 1 ELSE 0 END) > 0
@@ -25,7 +26,7 @@ public class RL_002 implements CustomerRuleTemplate {
                 SELECT gen_random_uuid(), :ruleId, t.customer_number, t.id, true, vc.gid, NOW(), NOW(), false
                 FROM transactions t
                 JOIN violating_customers vc ON t.customer_number = vc.customer_number
-                WHERE t.txn_time > NOW() - (CAST(:duration AS text) || ' days')::interval
+                WHERE t.txn_time > NOW() - (CAST(:duration AS text) || ' days')::interval AND evaluated = false;
                 """;
     }
 

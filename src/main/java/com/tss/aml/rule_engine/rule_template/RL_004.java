@@ -46,6 +46,7 @@ public class RL_004 implements CustomerRuleTemplate {
                 WHERE ah.evaluated = false
                   AND ah.amount > CAST(:threshold AS numeric)
                   AND EXTRACT(EPOCH FROM (ah.txn_time - COALESCE(ah.prev_txn_time, ah.account_created_at))) / 86400 > CAST(:duration AS numeric)
+                  AND evaluated = false
                 """;
     }
 
