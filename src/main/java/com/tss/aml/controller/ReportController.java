@@ -1,0 +1,96 @@
+package com.tss.aml.controller;
+
+import com.tss.aml.dto.request.CaseReportData;
+import com.tss.aml.dto.result.CaseResponseDto;
+import com.tss.aml.reports.ReportRow;
+import com.tss.aml.service.PdfReportService;
+import com.tss.aml.service.ReportService;
+import com.tss.aml.tenant.entity.BatchSummary;
+import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import static com.tss.aml.constant.GlobalConstants.REPORT_DIR;
+
+@RestController
+@RequestMapping("/api/v1/reports")
+@RequiredArgsConstructor
+public class ReportController {
+    public final ReportService reportService;
+    public final PdfReportService pdfService;
+
+    @GetMapping("/alert/pdf")
+    public ResponseEntity<InputStreamResource> downloadReport(
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to
+    ) {
+
+        List<ReportRow> rows;
+
+        if (from == null || to == null) {
+            rows = reportService.getAllReport();
+        } else {
+            LocalDateTime fromDate = LocalDateTime.parse(from);
+            LocalDateTime toDate = LocalDateTime.parse(to);
+
+            rows = reportService.getReport(fromDate, toDate);
+        }
+
+        ByteArrayInputStream pdf = pdfService.generateReport(rows);
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=report.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(new InputStreamResource(pdf));
+    }
+    @GetMapping("/cases/{id}/pdf")
+    public ResponseEntity<InputStreamResource> downloadCaseReport(@PathVariable UUID id) throws IOException {
+
+        Path path = Paths.get(REPORT_DIR + id + ".pdf");
+
+        if (!Files.exists(path)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        InputStreamResource resource = new InputStreamResource(new FileInputStream(path.toFile()));
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=case-report-" + id + ".pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .contentLength(Files.size(path))
+                .body(resource);
+    }
+
+    @GetMapping("/sar-logs")
+    @PreAuthorize("hasRole('BANK_ADMIN')")
+    public ResponseEntity<List<CaseResponseDto>> getSarLogs() {
+        return ResponseEntity.ok(reportService.getSarLogs());
+    }
+
+    @GetMapping("/co-performance")
+    @PreAuthorize("hasRole('BANK_ADMIN')")
+    public ResponseEntity<List<Map<String, Object>>> getCoPerformance() {
+        return ResponseEntity.ok(reportService.getCoPerformance());
+    }
+
+    @GetMapping("/batch-summaries")
+    @PreAuthorize("hasRole('BANK_ADMIN')")
+    public ResponseEntity<List<BatchSummary>> getBatchSummaries() {
+        return ResponseEntity.ok(reportService.getBatchSummaries());
+    }
+
+}

@@ -1,0 +1,54 @@
+package com.tss.aml.tenant.entity;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+@Entity
+@Table(name = "customers")
+@Getter
+@Setter
+public class Customer extends BaseEntity {
+
+    @Column(unique = true, nullable = false)
+    private String customerNumber;
+
+    @Column(nullable = false)
+    private String firstName;
+
+    private String middleName;
+
+    @Column(nullable = false)
+    private String lastName;
+
+    private String familyCode;
+
+    @Column(nullable = false)
+    private LocalDate dob;
+
+    @Column(nullable = false)
+    private String occupation;
+
+    @Column(nullable = false, length = 3)
+    private String nationalityCountry;
+
+    @Column(nullable = false, length = 3)
+    private String countryOfBirth;
+
+    @Column(nullable = false, precision = 19, scale = 4)
+    private BigDecimal income;
+
+    @Column(nullable = false, precision = 19, scale = 4)
+    private BigDecimal netWorth;
+
+
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Transaction> transactions;
+
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<BrokenRule> alerts;
+}
